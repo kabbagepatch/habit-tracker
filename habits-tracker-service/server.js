@@ -4,8 +4,8 @@ const datastore = new Datastore();
 const express = require('express');
 const app = express();
 
-const userRoutes = require('./user');
-const habitRoutes = require('./habit');
+const userRoutes = require('./users');
+const habitRoutes = require('./habits');
 
 app.get('/', (req, res) => {
   res.send('Hello from Habits App Engine!');

@@ -1,3 +1,5 @@
+const { differenceInDays, format, isAfter, isSameDay } = require("date-fns");
+
 const {Datastore} = require('@google-cloud/datastore');
 const datastore = new Datastore();
 
@@ -25,12 +27,19 @@ router.post('/', jsonParser, async (req, res, next) => {
         name,
         description,
         frequency, // times per week
+        currentStreak : 0,
+        longestStreak : 0,
+        lastCheckInDate: new Date(),
+        checkIns: [{
+          date: new Date(),
+          status: false,
+        }],
         createdAt: new Date(),
         updatedAt: new Date(),
       }
     }
     await datastore.save(newHabit);
-    res.status(201).json({ message: `Habit ${habitKey.id} created` });
+    res.status(201).json({ message: `Habit ${habitKey.id} created`, habit: newHabit.data });
   } catch (err) {
     next(err);
   }
@@ -94,15 +103,22 @@ router.put('/:id', jsonParser, async (req, res, next) => {
     habit.updatedAt = new Date();
 
     await datastore.save({ key: habitKey, data: habit });
+    delete habit.checkIns;
     res.status(200).send({ message: `Habit ${habitKey.id} updated`, habit });
   } catch (err) {
     next(err);
   }
 });
 
-// Delete habit by email
-router.delete('/:id', async (req, res, next) => {
-  const { id, userId } = req.params;
+// Check-in habit
+router.post('/:id/check-in', jsonParser, async (req, res, next) => {
+  const { id } = req.params;
+  const {
+    userId,
+    date,
+    status,
+  } = req.body;
+
   try {
     const habitKey = datastore.key(['Habit', datastore.int(id)]);
     const [habit] = await datastore.get(habitKey);
@@ -113,8 +129,63 @@ router.delete('/:id', async (req, res, next) => {
       return res.status(403).send('Forbidden: You do not have access to this habit');
     }
 
+    if (isAfter(date, habit.lastCheckInDate) && differenceInDays(date, habit.lastCheckInDate) === 1 && status) {
+      habit.lastCheckInDate = date;
+      habit.currentStreak += 1;
+      habit.longestStreak = Math.max(habit.longestStreak, habit.currentStreak);
+      habit.checkIns.push({ date, status })
+    } else {
+      const checkInInd = habit.checkIns.findIndex((checkIn) => isSameDay(checkIn.date, date))
+      if (checkInInd === -1) {
+        habit.checkIns.push({ date, status });
+      } else {
+        habit.checkIns[checkInInd].status = status;
+      }
+
+      // recalculate streaks
+      let currentStreak = 0;
+      let longestStreak = 0;
+      let lastCheckInDate = null;
+      const sortedCheckIns = habit.checkIns.sort((a, b) => new Date(a.date) - new Date(b.date));
+      sortedCheckIns.forEach((checkIn) => {
+        if (lastCheckInDate) {
+          if (differenceInDays(checkIn.date, lastCheckInDate) <= 1) {
+            currentStreak = checkIn.status ? currentStreak + 1 : 0;
+          } else {
+            currentStreak = checkIn.status ? 1 : 0;
+          }
+        } else {
+          currentStreak = checkIn.status ? 1 : 0;
+        }
+
+        lastCheckInDate = checkIn.date;
+        longestStreak = Math.max(longestStreak, currentStreak);
+      });
+
+      habit.currentStreak = currentStreak;
+      habit.longestStreak = longestStreak;
+      habit.lastCheckInDate = lastCheckInDate;
+    }
+
+    await datastore.save({ key: habitKey, data: habit });
+    res.status(200).send({ message: `Habit ${habitKey.id} updated`, habit });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Delete habit by email
+router.delete('/:id', async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const habitKey = datastore.key(['Habit', datastore.int(id)]);
+    const [habit] = await datastore.get(habitKey);
+    if (!habit) {
+      return res.status(404).send('Habit not found');
+    }
+
     await datastore.delete(habitKey);
-    res.status(204);
+    res.status(200).send('Habit deleted succesfully');
   } catch (err) {
     next(err)
   }
