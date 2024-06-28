@@ -4,9 +4,11 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "date-fns": "^3.6.0",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "firebase": "^10.12.2",
+    "firebase-admin": "^12.2.0"
   },
-  "name": "habits-tracker-service",
+  "name": "habit-tracker-service",
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {

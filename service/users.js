@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const firebaseAuth = require('firebase/auth');
 
 const {Datastore} = require('@google-cloud/datastore');
 const datastore = new Datastore();
@@ -54,6 +55,12 @@ router.post('/signup', jsonParser, async (req, res, next) => {
       return;
     }
 
+    const auth = firebaseAuth.getAuth();
+    const userCred = await firebaseAuth.createUserWithEmailAndPassword(auth, email, password);
+    console.log(userCred);
+    const user = userCred.user;
+    console.log(user);
+
     const newUser = {
       key: userKey,
       data: {
@@ -63,7 +70,7 @@ router.post('/signup', jsonParser, async (req, res, next) => {
         createdAt: new Date(),
       }
     };
-    await datastore.save(newUser);
+    // await datastore.save(newUser);
     res.status(201).json({ message: `User ${userKey.id} signed up` });
   } catch (err) {
     next(err);
@@ -98,7 +105,11 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // Delete user by email
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {  
+  const auth = firebaseAuth.getAuth();
+  await firebaseAuth.signInWithEmailAndPassword(auth, "kavishmunjal123@gmail.com", "#TestPass13")
+  await auth.currentUser.delete()
+
   const { id } = req.params;
   try {
     const userKey = datastore.key(['User', datastore.int(id)]);
