@@ -70,7 +70,7 @@ router.post('/signup', jsonParser, async (req, res, next) => {
         createdAt: new Date(),
       }
     };
-    // await datastore.save(newUser);
+    await datastore.save(newUser);
     res.status(201).json({ message: `User ${userKey.id} signed up` });
   } catch (err) {
     next(err);

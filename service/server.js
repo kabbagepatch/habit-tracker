@@ -12,7 +12,7 @@ const userRoutes = require('./users');
 const habitRoutes = require('./habits');
 
 // const firebaseConfig = {
-//   apiKey: 'AIzaSyAINQwQ15UebNkN3vIHM4GwaUy04mV4z-A',
+//   apiKey: '',
 //   authDomain: 'habitsapi-426700.firebaseapp.com',
 //   projectId: 'habitsapi-426700',
 //   storageBucket: 'habitsapi-426700.appspot.com',
