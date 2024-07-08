@@ -39,9 +39,9 @@ router.post('/login', jsonParser, async (req, res, next) => {
   }
 });
 
-// Signup
-router.post('/signup', jsonParser, async (req, res, next) => {
-  const { name, email, password } = req.body;
+// Create
+router.post('/', jsonParser, async (req, res, next) => {
+  const { name, email } = req.body;
   try {
     const userKey = datastore.key('User');
 
@@ -55,18 +55,11 @@ router.post('/signup', jsonParser, async (req, res, next) => {
       return;
     }
 
-    const auth = firebaseAuth.getAuth();
-    const userCred = await firebaseAuth.createUserWithEmailAndPassword(auth, email, password);
-    console.log(userCred);
-    const user = userCred.user;
-    console.log(user);
-
     const newUser = {
       key: userKey,
       data: {
         name,
         email: email.toLowerCase(),
-        password: await bcrypt.hash(password, 10),
         createdAt: new Date(),
       }
     };
@@ -77,7 +70,7 @@ router.post('/signup', jsonParser, async (req, res, next) => {
   }
 });
 
-// Display all users
+// Get all users
 router.get('/', async (req, res, next) => {
   try {
     const query = datastore.createQuery('User');
@@ -92,7 +85,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// Display user by ID
+// Get user by ID
 router.get('/:id', async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -104,7 +97,30 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// Delete user by email
+// Get user by ID
+router.get('/:id', async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const userQuery = datastore
+      .createQuery('User')
+      .filter('email', '=', email.toLowerCase())
+      .limit(1);
+    const [users] = await datastore.runQuery(userQuery);
+    if (users.length === 0) {
+      res.status(404).send(`User ${email} does not exist.`);
+      return;
+    }
+
+    const user = users[0];
+    user.id = user[datastore.KEY].id;
+
+    res.status(200).json({ user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Delete user by ID
 router.delete('/:id', async (req, res, next) => {  
   const auth = firebaseAuth.getAuth();
   await firebaseAuth.signInWithEmailAndPassword(auth, "kavishmunjal123@gmail.com", "#TestPass13")
