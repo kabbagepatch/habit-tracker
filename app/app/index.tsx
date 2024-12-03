@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button, StatusBar, Text, View } from "react-native";
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,13 +10,14 @@ import { getAuth, initializeAuth, signOut } from 'firebase/auth';
 import { getReactNativePersistence } from '@firebase/auth/dist/rn/index.js';
 import UserLogin from "./userLogin";
 
+let auth = getAuth(firebaseApp);
 
 export default function Index() {
   const [userEmail, setUserEmail] = useState('')
+  const [userHabits, setUserHabits] = useState([])
 
   const initialise = async () => {
     console.log('initialize');
-    let auth = getAuth(firebaseApp);
     if (!auth) {
       console.log('initializeAuth');
       auth = initializeAuth(firebaseApp, {
@@ -39,6 +41,16 @@ export default function Index() {
     setUserEmail('')
   };
 
+  const onLogin = async (email : string) => {
+    setUserEmail(email);
+    try {
+      const res = await axios.get('http://localhost:8080/habits', { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } });
+      setUserHabits(res.data.habits);
+    } catch (e : any) {
+      console.log(e.status);
+    }
+  }
+
   return (
     <View
       style={{
@@ -51,10 +63,11 @@ export default function Index() {
       {userEmail ?
         <>
           <Text style={{ marginBottom: 20 }}>Currently logged in as: {userEmail}.</Text>
+          <Text style={{ marginBottom: 20 }}>Habits: {userHabits.map((h : any) => h.name).join(', ')}</Text>
           <Button title={'Sign out'} onPress={onPressAuth} />
         </>
         :
-        <UserLogin onLogin={setUserEmail} />
+        <UserLogin onLogin={onLogin} />
       }
     </View>
   );

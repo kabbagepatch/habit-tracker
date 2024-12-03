@@ -1,7 +1,11 @@
 import { initializeApp } from 'firebase/app';
+import { initializeAuth } from 'firebase/auth';
+//@ts-ignore
+import { getReactNativePersistence } from '@firebase/auth/dist/rn/index.js';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
-  apiKey: '',
+  apiKey: process.env.API_KEY,
   authDomain: 'habitsapi-426700.firebaseapp.com',
   projectId: 'habitsapi-426700',
   storageBucket: 'habitsapi-426700.appspot.com',
@@ -11,5 +15,8 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
+initializeAuth(firebaseApp, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+});
 
 export default firebaseApp;

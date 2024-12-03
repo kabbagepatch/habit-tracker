@@ -12,18 +12,19 @@ const jsonParser = bodyParser.json();
 // Create habit
 router.post('/', jsonParser, async (req, res, next) => {
   const {
-    userId,
     name,
     description,
     frequency,
   } = req.body;
+
+  const { user_id } = req.user;
 
   try {
     const habitKey = datastore.key('Habit');
     const newHabit = {
       key: habitKey,
       data: {
-        userId,
+        userId: user_id,
         name,
         description,
         frequency, // times per week
@@ -47,12 +48,12 @@ router.post('/', jsonParser, async (req, res, next) => {
 
 // Display all habits
 router.get('/', async (req, res, next) => {
-  const { userId } = req.query;
+  const { user_id } = req.user;
 
   try {
     let query = datastore.createQuery('Habit');
-    if (userId) {
-      query = query.filter('userId', '=', datastore.int(userId))
+    if (user_id) {
+      query = query.filter('userId', '=', user_id)
     }
     const [habits] = await datastore.runQuery(query);
     const habitsWithId = habits.map(habit => {
@@ -81,11 +82,11 @@ router.get('/:id', async (req, res, next) => {
 router.put('/:id', jsonParser, async (req, res, next) => {
   const { id } = req.params;
   const {
-    userId,
     name,
     description,
     frequency,
   } = req.body;
+  const { user_id } = req.user;
 
   try {
     const habitKey = datastore.key(['Habit', datastore.int(id)]);
@@ -93,7 +94,7 @@ router.put('/:id', jsonParser, async (req, res, next) => {
     if (!habit) {
       return res.status(404).send('Habit not found');
     }
-    if (habit.userId !== userId) {
+    if (habit.userId !== user_id) {
       return res.status(403).send('Forbidden: You do not have access to this habit');
     }
 
@@ -114,10 +115,10 @@ router.put('/:id', jsonParser, async (req, res, next) => {
 router.post('/:id/check-in', jsonParser, async (req, res, next) => {
   const { id } = req.params;
   const {
-    userId,
     date,
     status,
   } = req.body;
+  const { user_id } = req.user;
 
   try {
     const habitKey = datastore.key(['Habit', datastore.int(id)]);
@@ -125,7 +126,7 @@ router.post('/:id/check-in', jsonParser, async (req, res, next) => {
     if (!habit) {
       return res.status(404).send('Habit not found');
     }
-    if (habit.userId !== userId) {
+    if (habit.userId !== user_id) {
       return res.status(403).send('Forbidden: You do not have access to this habit');
     }
 

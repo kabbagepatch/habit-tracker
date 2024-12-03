@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const firebaseAuth = require('firebase/auth');
 
 const {Datastore} = require('@google-cloud/datastore');
@@ -7,44 +6,28 @@ const datastore = new Datastore();
 const express = require('express');
 const router = express.Router();
 
-const bodyParser = require('body-parser');
-const jsonParser = bodyParser.json();
+const server = require('./server');
 
-// Login
-router.post('/login', jsonParser, async (req, res, next) => {
-  const { email, password } = req.body;
-  try {
-    const userQuery = datastore
-      .createQuery('User')
-      .filter('email', '=', email.toLowerCase())
-      .limit(1);
-    const [users] = await datastore.runQuery(userQuery);
-    if (users.length === 0) {
-      res.status(404).send(`User ${email} does not exist.`);
-      return;
-    }
-
-    const user = users[0];
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      res.status(403).send(`Password does not match.`);
-      return;
-    }
-    user.id = user[datastore.KEY].id;
-    delete user.password
-
-    res.status(200).json({ message: `User ${email} logged in`, user });
-  } catch (err) {
-    next(err);
+const authenticate = async (req, res, next) => {
+  const idToken = req.headers.authorization && req.headers.authorization.split('Bearer ')[1];
+  if (!idToken) {
+    return res.status(401).send('Unauthorized');
   }
-});
+
+  try {
+    const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.log(error);
+    return res.status(401).send('Unauthorized');
+  }
+};
 
 // Create
-router.post('/', jsonParser, async (req, res, next) => {
-  const { name, email } = req.body;
+router.post('/', authenticate, async (req, res, next) => {
+  const { uid, name, email } = req.user;
   try {
-    const userKey = datastore.key('User');
-
     const userExistsQuery = datastore
       .createQuery('User')
       .filter('email', '=', email.toLowerCase())
@@ -55,6 +38,7 @@ router.post('/', jsonParser, async (req, res, next) => {
       return;
     }
 
+    const userKey = datastore.key(['User', uid]);
     const newUser = {
       key: userKey,
       data: {
@@ -64,7 +48,7 @@ router.post('/', jsonParser, async (req, res, next) => {
       }
     };
     await datastore.save(newUser);
-    res.status(201).json({ message: `User ${userKey.id} signed up` });
+    res.status(201).json({ message: `User ${email} signed up` });
   } catch (err) {
     next(err);
   }
@@ -76,7 +60,7 @@ router.get('/', async (req, res, next) => {
     const query = datastore.createQuery('User');
     const [users] = await datastore.runQuery(query);
     const usersWithId = users.map(user => {
-      user.id = user[datastore.KEY].id;
+      user.id = user[datastore.KEY].name;
       return user;
     });
     res.status(200).send({ users: usersWithId });
@@ -89,32 +73,9 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   const { id } = req.params;
   try {
-    const userKey = datastore.key(['User', datastore.int(id)]);
+    const userKey = datastore.key(['User', id]);
     const [user] = await datastore.get(userKey);
     res.status(200).send({ user });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Get user by ID
-router.get('/:id', async (req, res, next) => {
-  const { email } = req.body;
-  try {
-    const userQuery = datastore
-      .createQuery('User')
-      .filter('email', '=', email.toLowerCase())
-      .limit(1);
-    const [users] = await datastore.runQuery(userQuery);
-    if (users.length === 0) {
-      res.status(404).send(`User ${email} does not exist.`);
-      return;
-    }
-
-    const user = users[0];
-    user.id = user[datastore.KEY].id;
-
-    res.status(200).json({ user });
   } catch (err) {
     next(err);
   }
@@ -135,5 +96,18 @@ router.delete('/:id', async (req, res, next) => {
     next(err);
   }
 });
+
+// Test user
+router.get('/admin/test', authenticate, async (req, res, next) => {
+  try {
+    //habitsapi-426700-firebase-adminsdk-dol7n-5cd3b1e42e
+    // const auth = firebaseAuth.getAuth();
+    // await firebaseAuth.signInWithEmailAndPassword(auth, "kavishmunjal123@gmail.com", "#Habits4Bwi13")
+    res.status(200).send(req.user);
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 module.exports = router;
