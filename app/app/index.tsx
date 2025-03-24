@@ -1,18 +1,14 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button, StatusBar, Text, View } from "react-native";
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
-
-import firebaseApp from "./firebaseApp";
-
-import { getAuth, initializeAuth, signOut } from 'firebase/auth';
-//@ts-ignore
-import { getReactNativePersistence } from '@firebase/auth/dist/rn/index.js';
+import { firebaseAuth } from "./firebaseApp";
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 import UserLogin from "./userLogin";
 
-let auth = getAuth(firebaseApp);
+let auth = firebaseAuth;
 
 export default function Index() {
+  const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [userHabits, setUserHabits] = useState([])
 
@@ -20,11 +16,8 @@ export default function Index() {
     console.log('initialize');
     if (!auth) {
       console.log('initializeAuth');
-      auth = initializeAuth(firebaseApp, {
-        persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-      });
+      auth = firebaseAuth
     }
-    console.log("current user", auth.currentUser);
     if (auth.currentUser?.email) {
       setUserEmail(auth.currentUser.email)
     }
@@ -34,21 +27,39 @@ export default function Index() {
     initialise()
   }, []);
 
-  const onPressAuth = async () => {
-    const auth = getAuth(firebaseApp);
-    console.log('sign out')
-    await signOut(auth);
-    setUserEmail('')
-  };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.email) {
+        setUserEmail(user.email)
+      }
+      setLoading(false);
+    });
 
-  const onLogin = async (email : string) => {
-    setUserEmail(email);
+    return () => unsubscribe();
+  }, []);
+
+  const setHabits = async () => {
     try {
       const res = await axios.get('http://localhost:8080/habits', { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } });
       setUserHabits(res.data.habits);
     } catch (e : any) {
       console.log(e.status);
     }
+  }
+
+  useEffect(() => {
+    if (userEmail) setHabits()
+  }, [userEmail]);
+
+  const onSignOut = async () => {
+    console.log('sign out')
+    await signOut(auth);
+    setUserEmail('');
+    setUserHabits([]);
+  };
+
+  const onLogin = async (email : string) => {
+    setUserEmail(email);
   }
 
   return (
@@ -64,10 +75,10 @@ export default function Index() {
         <>
           <Text style={{ marginBottom: 20 }}>Currently logged in as: {userEmail}.</Text>
           <Text style={{ marginBottom: 20 }}>Habits: {userHabits.map((h : any) => h.name).join(', ')}</Text>
-          <Button title={'Sign out'} onPress={onPressAuth} />
+          <Button title={'Sign out'} onPress={onSignOut} />
         </>
         :
-        <UserLogin onLogin={onLogin} />
+        loading ? 'Loading...' : <UserLogin onLogin={onLogin} />
       }
     </View>
   );

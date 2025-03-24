@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const cors = require('cors');
 const firebase = require('firebase/app');
 const firebaseAdmin = require('firebase-admin');
 
@@ -41,9 +42,18 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+app.options('*', cors());
+
 app.get('/', (req, res) => {
   res.send('Hello from Habits App Engine!');
 });
+
+app.use(cors({
+  origin: 'http://localhost:8081', // Change this to match your frontend
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  credentials: true
+}));
 
 app.use('/users', userRoutes);
 app.use('/habits', authenticate, habitRoutes);

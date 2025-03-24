@@ -98,12 +98,12 @@ router.delete('/:id', async (req, res, next) => {
 });
 
 // Test user
-router.get('/admin/test', authenticate, async (req, res, next) => {
+router.get('/admin/token', async (req, res, next) => {
   try {
     //habitsapi-426700-firebase-adminsdk-dol7n-5cd3b1e42e
-    // const auth = firebaseAuth.getAuth();
-    // await firebaseAuth.signInWithEmailAndPassword(auth, "kavishmunjal123@gmail.com", "#Habits4Bwi13")
-    res.status(200).send(req.user);
+    const auth = firebaseAuth.getAuth();
+    const userCred = await firebaseAuth.signInWithEmailAndPassword(auth, "kavishmunjal123@gmail.com", "#Habits4Bwi13")
+    res.status(200).send(auth.currentUser.accessToken);
   } catch (err) {
     next(err);
   }
