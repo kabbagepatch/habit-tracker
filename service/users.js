@@ -97,7 +97,6 @@ router.delete('/:id', async (req, res, next) => {
   }
 });
 
-// Test user
 router.get('/admin/token', async (req, res, next) => {
   try {
     //habitsapi-426700-firebase-adminsdk-dol7n-5cd3b1e42e

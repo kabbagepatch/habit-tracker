@@ -175,7 +175,7 @@ router.post('/:id/check-in', jsonParser, async (req, res, next) => {
   }
 });
 
-// Delete habit by email
+// Delete habit
 router.delete('/:id', async (req, res, next) => {
   const { id } = req.params;
   try {
