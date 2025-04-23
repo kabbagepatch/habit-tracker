@@ -1,35 +1,27 @@
 import { Stack } from "expo-router";
-import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Provider as PaperProvider, Text, MD3LightTheme } from 'react-native-paper';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
 
-import { firebaseAuth } from "./firebaseApp";
 import { Button } from "react-native-paper";
-let auth = firebaseAuth;
+import { userService } from "../service";
+import useUserInfo from "../hooks/useUserInfo";
 
 export default function RootLayout() {
-  const [userEmail, setUserEmail] = useState('')
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUserEmail(user?.email || '');
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const onSignOut = async () => {
-    await signOut(auth);
-  };
+  const { user } = useUserInfo();
 
   return (
     <PaperProvider theme={MD3LightTheme}>
       <Stack
         screenOptions={{
           headerTitle: () => <Text variant='headlineSmall'>Habit Tracker</Text>,
-          headerRight: () => (userEmail ? <View style={{ justifyContent: 'flex-end' }}>
-            <Button uppercase compact mode='contained' onPress={onSignOut} labelStyle={{ fontFamily: ' -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif' }}>
+          headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', marginRight: 10 }}>
+            <Button
+              uppercase
+              compact
+              mode='contained'
+              onPress={userService.signOut}
+              labelStyle={{ fontFamily: ' -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif' }}
+            >
               Sign Out
             </Button>
           </View> : null),

@@ -4,6 +4,7 @@ import { Button, Pressable, StyleSheet, Text, TextInput, View } from 'react-nati
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 import firebaseApp from "../firebaseApp";
+import { userService } from '../../service';
 
 export default function Login() {
   const [mode, setMode] = useState('LOGIN')
@@ -14,6 +15,10 @@ export default function Login() {
   const [error, setError] = useState('')
 
   const validate = (): boolean => {
+    if (error) {
+      setError('');
+    }
+
     if (!email || !password) {
       setError('You are missing required information');
       return false;
@@ -40,8 +45,10 @@ export default function Login() {
       return;
     }
 
-    const auth = getAuth(firebaseApp);
-    await signInWithEmailAndPassword(auth, email, password)
+    await userService.signIn(email, password);
+
+    // const auth = getAuth(firebaseApp);
+    // await signInWithEmailAndPassword(auth, email, password)
   };
   
   const onPressSignUp = async () => {
@@ -49,9 +56,11 @@ export default function Login() {
       return;
     }
 
-    const auth = getAuth(firebaseApp);
-    const userCred = await createUserWithEmailAndPassword(auth, email, password)
-    await updateProfile(userCred.user, { displayName: name })
+    await userService.signUp(email, password, name);
+
+    // const auth = getAuth(firebaseApp);
+    // const userCred = await createUserWithEmailAndPassword(auth, email, password)
+    // await updateProfile(userCred.user, { displayName: name })
   };
 
   const getButtonText = (): string => {

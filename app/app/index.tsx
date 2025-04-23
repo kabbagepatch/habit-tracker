@@ -1,38 +1,31 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { StatusBar, Text, View, FlatList, TouchableOpacity } from "react-native";
+import { useEffect, useState } from 'react';
+import { StatusBar, Text, View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { FAB, Checkbox, IconButton } from 'react-native-paper';
-import { onAuthStateChanged } from "firebase/auth";
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
-import Login from "./components/login";
-import { firebaseAuth } from "./firebaseApp";
-let auth = firebaseAuth;
+import Login from './components/login';
+import { habitService } from '../service';
+import useUserInfo from '../hooks/useUserInfo';
 
 export default function Index() {
-  const [loading, setLoading] = useState(true)
-  const [userEmail, setUserEmail] = useState(auth.currentUser?.email || '')
-  const [userHabits, setUserHabits] = useState([])
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setLoading(false);
-      setUserEmail(user?.email || '');
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const { replace } = useLocalSearchParams();
+  const router = useRouter();
+  const { loading : loadingUser, user } = useUserInfo();
+  const [loadingHabits, setLoadingHabits] = useState(true);
+  const [userHabits, setUserHabits] = useState<Habit[]>([]);
 
   const setHabits = async () => {
-    try {
-      const res = await axios.get('http://localhost:8080/habits', { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } });
-      setUserHabits(res.data.habits);
-    } catch (e : any) {
-      console.log(e.status);
+    const habits = await habitService.getHabits();
+    setLoadingHabits(true);
+    if (habits) {
+      setUserHabits(habits);
     }
   }
 
-  const isCheckedToday = (habit : any) => {
-    const dateString = new Date().toLocaleDateString();
+  const isCheckedToday = (habit : Habit, minus : number = 0) => {
+    const date = new Date();
+    date.setDate(date.getDate() - minus);
+    const dateString = date.toLocaleDateString();
     const checkInInd = habit.checkIns.findIndex((checkIn : any) => checkIn.date == dateString);
     if (checkInInd === -1) {
       return false
@@ -41,69 +34,118 @@ export default function Index() {
     }
   }
 
-  const onCheck = async (habitInd : number) => {
-    const dateString = new Date().toLocaleDateString();
-
-    const habit : any = userHabits[habitInd];
-
-    const res = await axios.post(
-      `http://localhost:8080/habits/${habit.id}/check-in`,
-      { date: dateString, status: !isCheckedToday(habit) },
-      { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` }
-    });
-    console.log('Success: ', res.data.habit.checkIns);
-
-    userHabits[habitInd].checkIns = res.data.habit.checkIns;
-    setUserHabits([].concat(userHabits));
+  const onCheck = async (habitInd : number, minus : number = 0) => {
+    const date = new Date();
+    date.setDate(date.getDate() - minus);
+    const dateString = date.toLocaleDateString();
+    const habit = userHabits[habitInd];
+    const updatedHabit = await habitService.checkIn(habit.id, dateString, !isCheckedToday(habit, minus));
+    if (!updatedHabit) return;
+    setUserHabits(userHabits.map((h, i) => i === habitInd ? { ...h, checkIns: updatedHabit.checkIns } : h));
   }
 
   const onDelete = async (habitInd : number) => {
-    const habit : any = userHabits[habitInd];
-    const res = await axios.delete(
-      `http://localhost:8080/habits/${habit.id}`,
-      { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` }
-    });
-    console.log('Success: ', res.data);
+    const habit = userHabits[habitInd];
+    await habitService.deleteHabit(habit.id);
 
-    userHabits.splice(habitInd, 1);
-    setUserHabits([].concat(userHabits));
+    setUserHabits(userHabits.filter((_, i) => i !== habitInd));
   }
 
   useEffect(() => {
-    if (userEmail) setHabits()
-    // @ts-ignore
-  }, [userEmail]);
+    if (user || replace) {
+      setHabits();
+      if (replace) {
+        router.replace('/');
+      }
+    }
+  }, [user, replace]);
 
-  if (loading) return <Text>Loading...</Text>
-  if (!userEmail) return <Login />;
+  if (loadingUser) return <Text>Loading...</Text>
+
+  if (!user) return <Login />;
+
+  if (userHabits.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ fontSize: 20 }}>No habits found</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={{
-      flex: 1,
-      alignItems: 'center',
-    }}>
+    <View style={styles.container}>
       <StatusBar />
-      <View style={{ width: '100%', flex: 1, padding: 20 }}> 
+      <View style={styles.habitsContainer}>
+        <View style={styles.habit}>
+          <View style={styles.habitName}></View>
+          <Text style={styles.date}>{new Date().getDate()}</Text>
+          <Text style={styles.date}>{new Date().getDate() - 1}</Text>
+          <Text style={styles.date}>{new Date().getDate() - 2}</Text>
+          <Text style={styles.date}>{new Date().getDate() - 3}</Text>
+          <Text style={styles.date}>{new Date().getDate() - 4}</Text>
+        </View>
         <FlatList
           data={userHabits}
           keyExtractor={(item : any) => item.id.toString()}
           renderItem={({ item, index }) => (
-            <View style={{ flex: 1, flexDirection: 'row', justifyContent: "space-between" }}>
-              <TouchableOpacity onPress={() => onCheck(index)}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
-                  <Checkbox status={isCheckedToday(item) ? 'checked' : 'unchecked'} color='#BB86FC' />
-                  <Text style={{ fontSize: 18 }}>{item.name}</Text>
-                </View>
-              </TouchableOpacity>
+            <View style={styles.habitContainer}>
+              <View style={styles.habit}>
+                <Text style={styles.habitName}>{item.name}</Text>
+                <Checkbox status={isCheckedToday(item) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index)}/>
+                <Checkbox status={isCheckedToday(item, 1) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 1)} />
+                <Checkbox status={isCheckedToday(item, 2) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 2)} />
+                <Checkbox status={isCheckedToday(item, 3) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 3)} />
+                <Checkbox status={isCheckedToday(item, 4) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 4)} />
+              </View>
               <IconButton icon='delete' iconColor='#F00A' onPress={() => onDelete(index)} />
             </View>
           )}
         />
         <FAB
-          style={{ position: 'absolute', bottom: 20, right: 20, backgroundColor: '#BB86FC' }}
+          style={styles.createButton}
           icon='plus'
+          onPress={() => router.navigate('/create')}
         />
       </View>
     </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  habitsContainer: {
+    width: '100%',
+    flex: 1,
+    padding: 10,
+  },
+  date: {
+    fontSize: 15,
+    width: 36,
+    textAlign: 'center',
+  },
+  habitContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  habit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  habitName: {
+    width: 100,
+    fontSize: 18,
+    paddingRight: 10,
+  },
+  createButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#BB86FC'
+  }
+});

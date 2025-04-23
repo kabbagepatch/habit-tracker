@@ -101,7 +101,8 @@ router.get('/admin/token', async (req, res, next) => {
   try {
     //habitsapi-426700-firebase-adminsdk-dol7n-5cd3b1e42e
     const auth = firebaseAuth.getAuth();
-    const userCred = await firebaseAuth.signInWithEmailAndPassword(auth, "kavishmunjal123@gmail.com", "#Habits4Bwi13")
+    const decodedToken = atob(req.headers.authorization.split('Basic ')[1]).split(':');
+    await firebaseAuth.signInWithEmailAndPassword(auth, decodedToken[0], decodedToken[1])
     res.status(200).send(auth.currentUser.accessToken);
   } catch (err) {
     next(err);

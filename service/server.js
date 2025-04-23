@@ -3,6 +3,7 @@ require('dotenv').config();
 const cors = require('cors');
 const firebase = require('firebase/app');
 const firebaseAdmin = require('firebase-admin');
+const firebaseAuth = require('firebase/auth');
 
 const express = require('express');
 const app = express();
@@ -27,15 +28,27 @@ firebaseAdmin.initializeApp({
 });
 
 const authenticate = async (req, res, next) => {
-  const idToken = req.headers.authorization && req.headers.authorization.split('Bearer ')[1];
-  if (!idToken) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     return res.status(401).send('Unauthorized');
   }
 
   try {
-    const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
-    req.user = decodedToken;
-    next();
+    let idToken;
+    if (authHeader.includes('Basic ')) {
+      const auth = firebaseAuth.getAuth();
+      const decodedToken = atob(authHeader.split('Basic ')[1]).split(':');
+      await firebaseAuth.signInWithEmailAndPassword(auth, decodedToken[0], decodedToken[1])
+      req.user = auth.currentUser;
+      next();
+    } else if (authHeader.includes('Bearer ')) {
+      const auth = firebaseAdmin.auth();
+      idToken = authHeader.split('Bearer ')[1];
+      req.user = await auth.verifyIdToken(idToken);
+      next();
+    } else {
+      throw Error('No authorization found');
+    }
   } catch (error) {
     console.log(error);
     return res.status(401).send('Unauthorized');

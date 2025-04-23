@@ -17,14 +17,14 @@ router.post('/', jsonParser, async (req, res, next) => {
     frequency,
   } = req.body;
 
-  const { user_id } = req.user;
+  const { uid } = req.user;
 
   try {
     const habitKey = datastore.key('Habit');
     const newHabit = {
       key: habitKey,
       data: {
-        userId: user_id,
+        userId: uid,
         name,
         description,
         frequency, // times per week
@@ -48,12 +48,12 @@ router.post('/', jsonParser, async (req, res, next) => {
 
 // Display all habits
 router.get('/', async (req, res, next) => {
-  const { user_id } = req.user;
+  const { uid } = req.user;
 
   try {
     let query = datastore.createQuery('Habit');
-    if (user_id) {
-      query = query.filter('userId', '=', user_id)
+    if (uid) {
+      query = query.filter('userId', '=', uid)
     }
     const [habits] = await datastore.runQuery(query);
     const habitsWithId = habits.map(habit => {
@@ -86,7 +86,7 @@ router.put('/:id', jsonParser, async (req, res, next) => {
     description,
     frequency,
   } = req.body;
-  const { user_id } = req.user;
+  const { uid } = req.user;
 
   try {
     const habitKey = datastore.key(['Habit', datastore.int(id)]);
@@ -94,7 +94,7 @@ router.put('/:id', jsonParser, async (req, res, next) => {
     if (!habit) {
       return res.status(404).send('Habit not found');
     }
-    if (habit.userId !== user_id) {
+    if (habit.userId !== uid) {
       return res.status(403).send('Forbidden: You do not have access to this habit');
     }
 
@@ -118,7 +118,7 @@ router.post('/:id/check-in', jsonParser, async (req, res, next) => {
     date,
     status,
   } = req.body;
-  const { user_id } = req.user;
+  const { uid } = req.user;
 
   try {
     const habitKey = datastore.key(['Habit', datastore.int(id)]);
@@ -126,7 +126,7 @@ router.post('/:id/check-in', jsonParser, async (req, res, next) => {
     if (!habit) {
       return res.status(404).send('Habit not found');
     }
-    if (habit.userId !== user_id) {
+    if (habit.userId !== uid) {
       return res.status(403).send('Forbidden: You do not have access to this habit');
     }
 
