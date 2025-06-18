@@ -15,7 +15,12 @@ router.post('/', jsonParser, async (req, res, next) => {
     name,
     description,
     frequency,
-  } = req.body;
+    color,
+  } = req.body || {};
+
+  if (!name) {
+    return res.status(400).send('Habit name is required');
+  }
 
   const { uid } = req.user;
 
@@ -28,6 +33,7 @@ router.post('/', jsonParser, async (req, res, next) => {
         name,
         description,
         frequency, // times per week
+        color,
         currentStreak : 0,
         longestStreak : 0,
         lastCheckInDate: new Date(),
@@ -49,6 +55,7 @@ router.post('/', jsonParser, async (req, res, next) => {
 // Display all habits
 router.get('/', async (req, res, next) => {
   const { uid } = req.user;
+  const { skipCheckins } = req.query;
 
   try {
     let query = datastore.createQuery('Habit');
@@ -58,6 +65,9 @@ router.get('/', async (req, res, next) => {
     const [habits] = await datastore.runQuery(query);
     const habitsWithId = habits.map(habit => {
       habit.id = habit[datastore.KEY].id;
+      if (skipCheckins === 'true') {
+        delete habit.checkIns;
+      }
       return habit;
     });
     res.status(200).send({ habits: habitsWithId });
@@ -85,8 +95,13 @@ router.put('/:id', jsonParser, async (req, res, next) => {
     name,
     description,
     frequency,
+    color,
   } = req.body;
   const { uid } = req.user;
+
+  if (name !== undefined && name.trim() === '') {
+    return res.status(400).send('Habit name is required');
+  }
 
   try {
     const habitKey = datastore.key(['Habit', datastore.int(id)]);
@@ -100,6 +115,7 @@ router.put('/:id', jsonParser, async (req, res, next) => {
 
     habit.name = name || habit.name;
     habit.description = description || habit.description;
+    habit.color = color || habit.color;
     habit.frequency = frequency || habit.frequency;
     habit.updatedAt = new Date();
 

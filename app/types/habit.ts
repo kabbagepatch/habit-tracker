@@ -9,6 +9,7 @@ interface Habit {
   name: string;
   description: string;
   frequency: number;
+  color: string;
   currentStreak: number;
   longestStreak: number;
   lastCheckInDate: string;

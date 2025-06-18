@@ -41,7 +41,7 @@ export default function Index() {
     const habit = userHabits[habitInd];
     const updatedHabit = await habitService.checkIn(habit.id, dateString, !isCheckedToday(habit, minus));
     if (!updatedHabit) return;
-    setUserHabits(userHabits.map((h, i) => i === habitInd ? { ...h, checkIns: updatedHabit.checkIns } : h));
+    setUserHabits(userHabits.map((h, i) => i === habitInd ? { ...h, checkIns: updatedHabit.checkIns, currentStreak: updatedHabit.currentStreak } : h));
   }
 
   const onDelete = async (habitInd : number) => {
@@ -76,28 +76,39 @@ export default function Index() {
     <View style={styles.container}>
       <StatusBar />
       <View style={styles.habitsContainer}>
-        <View style={styles.habit}>
-          <View style={styles.habitName}></View>
-          <Text style={styles.date}>{new Date().getDate()}</Text>
-          <Text style={styles.date}>{new Date().getDate() - 1}</Text>
-          <Text style={styles.date}>{new Date().getDate() - 2}</Text>
-          <Text style={styles.date}>{new Date().getDate() - 3}</Text>
-          <Text style={styles.date}>{new Date().getDate() - 4}</Text>
-        </View>
         <FlatList
+          style={{ paddingBottom: 70 }}
           data={userHabits}
           keyExtractor={(item : any) => item.id.toString()}
           renderItem={({ item, index }) => (
             <View style={styles.habitContainer}>
               <View style={styles.habit}>
-                <Text style={styles.habitName}>{item.name}</Text>
-                <Checkbox status={isCheckedToday(item) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index)}/>
-                <Checkbox status={isCheckedToday(item, 1) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 1)} />
-                <Checkbox status={isCheckedToday(item, 2) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 2)} />
-                <Checkbox status={isCheckedToday(item, 3) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 3)} />
-                <Checkbox status={isCheckedToday(item, 4) ? 'checked' : 'unchecked'} color='#BB86FC' onPress={() => onCheck(index, 4)} />
+                <View style={styles.habitNameContainer}> 
+                  <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]}>
+                    {item.name + ` (${item.currentStreak})`}
+                  </Text>
+                  <IconButton icon='delete' iconColor='hsla(0, 100%, 50%, 0.66)' onPress={() => onDelete(index)} />
+                </View>
+                <View style={styles.habitChecks}>
+                  {
+                    Array.from({ length: 5 }, (_, i) => {
+                      const date = new Date();
+                      date.setDate(date.getDate() - i);
+                      const checkedColor = item.color || 'hsl(0, 0%, 60%)';
+                      const unCheckedColor = item.color ? item.color.replace(', 1)', ', 0.15)') :'hsla(0, 0%, 60%, 0.15)';
+                      return (
+                        <TouchableOpacity
+                          key={i}
+                          onPress={() => onCheck(index, i)}
+                          style={[styles.habitCheck, { backgroundColor: isCheckedToday(item, i) ? checkedColor : unCheckedColor }]}
+                        >
+                          <Text key={i} style={styles.date}>{date.getDate()}</Text>
+                        </TouchableOpacity>
+                      );
+                    })
+                  }
+                </View>
               </View>
-              <IconButton icon='delete' iconColor='#F00A' onPress={() => onDelete(index)} />
             </View>
           )}
         />
@@ -130,22 +141,47 @@ const styles = StyleSheet.create({
   habitContainer: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    shadowColor: 'hsl(0, 0%, 0%)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   habit: {
+    width: '100%',
+  },
+  habitNameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    justifyContent: 'space-between',
+    marginBottom: 15,
   },
   habitName: {
-    width: 100,
     fontSize: 18,
-    paddingRight: 10,
+    fontWeight: 'bold',
+  },
+  habitChecks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  habitCheck: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginHorizontal: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   createButton: {
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: '#BB86FC'
+    backgroundColor: 'hsl(296, 100.00%, 87.30%)'
   }
 });

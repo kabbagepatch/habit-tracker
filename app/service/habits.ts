@@ -17,11 +17,11 @@ export const getHabits = async () : Promise<Habit[] | undefined> => {
   }
 }
 
-export const createHabit = async (name : string, description : string, frequency : number) : Promise<Habit | undefined> => {
+export const createHabit = async (name : string, description : string, frequency : number, color: string) : Promise<Habit | undefined> => {
   try {
     const res = await axios.post(
       `${baseUrl}/habits`,
-      { name, description, frequency },
+      { name, description, frequency, color },
       { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
     );
     return res.data.habit;
