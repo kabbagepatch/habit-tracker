@@ -17,11 +17,36 @@ export const getHabits = async () : Promise<Habit[] | undefined> => {
   }
 }
 
-export const createHabit = async (name : string, description : string, frequency : number, color: string) : Promise<Habit | undefined> => {
+export const getHabit = async (habitId : string) : Promise<Habit | undefined> => {
+  try {
+    const res = await axios.get(
+      `${baseUrl}/habits/${habitId}`,
+      { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
+    );
+    return res.data.habit;
+  } catch (e : any) {
+    console.log(e.status);
+  }
+}
+
+export const createHabit = async (habitData : HabitData) : Promise<Habit | undefined> => {
   try {
     const res = await axios.post(
       `${baseUrl}/habits`,
-      { name, description, frequency, color },
+      habitData,
+      { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
+    );
+    return res.data.habit;
+  } catch (e : any) {
+    console.log(e.status);
+  }
+}
+
+export const updateHabit = async (habitId : string, habitData : HabitData) : Promise<Habit | undefined> => {
+  try {
+    const res = await axios.put(
+      `${baseUrl}/habits/${habitId}`,
+      habitData,
       { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
     );
     return res.data.habit;

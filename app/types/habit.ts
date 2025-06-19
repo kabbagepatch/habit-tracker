@@ -17,3 +17,10 @@ interface Habit {
   createdAt: string;
   updatedAt: string;
 }
+
+interface HabitData {
+  name: string;
+  description: string;
+  frequency: number;
+  color: string;
+}

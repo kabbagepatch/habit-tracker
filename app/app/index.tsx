@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StatusBar, Text, View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { FAB, Checkbox, IconButton } from 'react-native-paper';
+import { FAB, IconButton } from 'react-native-paper';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import Login from './components/login';
@@ -15,8 +15,9 @@ export default function Index() {
   const [userHabits, setUserHabits] = useState<Habit[]>([]);
 
   const setHabits = async () => {
-    const habits = await habitService.getHabits();
     setLoadingHabits(true);
+    const habits = await habitService.getHabits();
+    setLoadingHabits(false);
     if (habits) {
       setUserHabits(habits);
     }
@@ -44,11 +45,15 @@ export default function Index() {
     setUserHabits(userHabits.map((h, i) => i === habitInd ? { ...h, checkIns: updatedHabit.checkIns, currentStreak: updatedHabit.currentStreak } : h));
   }
 
-  const onDelete = async (habitInd : number) => {
-    const habit = userHabits[habitInd];
-    await habitService.deleteHabit(habit.id);
+  const onUpdate = (habitId : string) => {
+    console.log('onUpdate', habitId);
+    router.navigate(`/update/${habitId}`);
+  }
 
-    setUserHabits(userHabits.filter((_, i) => i !== habitInd));
+  const onDelete = async (habitId : string) => {
+    await habitService.deleteHabit(habitId);
+
+    setUserHabits(userHabits.filter((h) => h.id !== habitId));
   }
 
   useEffect(() => {
@@ -61,8 +66,8 @@ export default function Index() {
   }, [user, replace]);
 
   if (loadingUser) return <Text>Loading...</Text>
-
   if (!user) return <Login />;
+  if (loadingHabits) return <Text>Loading...</Text>
 
   if (userHabits.length === 0) {
     return (
@@ -87,7 +92,10 @@ export default function Index() {
                   <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]}>
                     {item.name + ` (${item.currentStreak})`}
                   </Text>
-                  <IconButton icon='delete' iconColor='hsla(0, 100%, 50%, 0.66)' onPress={() => onDelete(index)} />
+                  <View style={styles.habitButtons}>
+                    <IconButton icon='pencil' iconColor='hsla(204, 100.00%, 50.00%, 0.66)' style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />
+                    <IconButton icon='delete' iconColor='hsla(0, 100%, 50%, 0.66)' style={{ margin: 0 }} onPress={() => onDelete(item.id)} />
+                  </View>
                 </View>
                 <View style={styles.habitChecks}>
                   {
@@ -155,6 +163,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   habitNameContainer: {
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -163,6 +172,12 @@ const styles = StyleSheet.create({
   habitName: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  habitButtons: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   habitChecks: {
     flexDirection: 'row',
