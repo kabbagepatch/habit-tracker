@@ -61,6 +61,11 @@ export default function Index() {
     return (
       <View style={styles.container}>
         <Text style={{ fontSize: 20 }}>No habits found</Text>
+        <FAB
+          style={styles.createButton}
+          icon='plus'
+          onPress={() => router.navigate('/create')}
+        />
       </View>
     );
   }
