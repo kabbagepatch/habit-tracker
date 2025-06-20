@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
 });
 
 app.use(cors({
-  origin: 'http://localhost:8081', // Change this to match your frontend
+  origin: 'https://myhabitstracker.netlify.app',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Authorization', 'Content-Type'],
   credentials: true

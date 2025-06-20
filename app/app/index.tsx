@@ -38,6 +38,7 @@ export default function Index() {
   }
 
   const onDelete = async (habitId : string) => {
+    if (confirm('Are you sure you want to delete this habit?') === false) return;
     await habitService.deleteHabit(habitId);
 
     setUserHabits(userHabits.filter((h) => h.id !== habitId));
