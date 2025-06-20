@@ -36,11 +36,8 @@ router.post('/', jsonParser, async (req, res, next) => {
         color,
         currentStreak : 0,
         longestStreak : 0,
-        lastCheckInDate: new Date(),
-        checkIns: [{
-          date: new Date(),
-          status: false,
-        }],
+        lastCheckInDate: '',
+        checkIns: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -162,7 +159,7 @@ router.post('/:id/check-in', jsonParser, async (req, res, next) => {
       // recalculate streaks
       let currentStreak = 0;
       let longestStreak = 0;
-      let lastCheckInDate = null;
+      let lastCheckInDate = '';
       const sortedCheckIns = habit.checkIns.sort((a, b) => new Date(a.date) - new Date(b.date));
       sortedCheckIns.forEach((checkIn) => {
         if (lastCheckInDate) {
