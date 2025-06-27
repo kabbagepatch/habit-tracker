@@ -3,7 +3,7 @@ import axios from 'axios';
 import { firebaseAuth } from '../app/firebaseApp';
 let auth = firebaseAuth;
 
-const baseUrl = 'http://localhost:8080' // 'https://habitsapi-426700.uc.r.appspot.com';
+const baseUrl = 'https://habitsapi-426700.uc.r.appspot.com';
 
 export const getHabits = async () : Promise<{ [key: string]: Habit } | undefined> => {
   try {
