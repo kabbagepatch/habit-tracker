@@ -24,3 +24,7 @@ interface HabitData {
   frequency: number;
   color: string;
 }
+
+interface Habits { 
+  [key: string]: Habit
+};

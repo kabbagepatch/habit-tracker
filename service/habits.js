@@ -36,11 +36,8 @@ router.post('/', jsonParser, async (req, res, next) => {
         color,
         currentStreak : 0,
         longestStreak : 0,
-        lastCheckInDate: new Date(),
-        checkIns: [{
-          date: new Date(),
-          status: false,
-        }],
+        lastCheckInDate: '',
+        checkIns: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -63,14 +60,16 @@ router.get('/', async (req, res, next) => {
       query = query.filter('userId', '=', uid)
     }
     const [habits] = await datastore.runQuery(query);
-    const habitsWithId = habits.map(habit => {
+    const habitsObject = {};
+    habits.forEach(habit => {
       habit.id = habit[datastore.KEY].id;
+      habitsObject[habit.id] = habit;
       if (skipCheckins === 'true') {
         delete habit.checkIns;
       }
       return habit;
     });
-    res.status(200).send({ habits: habitsWithId });
+    res.status(200).send(habitsObject);
   } catch (err) {
     next(err)
   }

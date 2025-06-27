@@ -3,18 +3,16 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 
 type FormProps = {
-  existingName?: string;
-  existingDescription?: string;
-  existingFrequency?: number;
-  existingColor?: string;
+  existingHabit?: Habit;
+  submitting?: boolean;
   onSubmit: (name: string, description: string, frequency: number, color: string) => void;
 };
 
-export default function Form({ existingName, existingDescription, existingColor, existingFrequency, onSubmit } : FormProps) {
-  const [name, setName] = useState(existingName || '');
-  const [description, setDescription] = useState(existingDescription || '');
-  const [frequency, setFrequency] = useState(existingFrequency || 7);
-  const [color, setColor] = useState(existingColor || 'hsl(0, 100%, 71%)');
+export default function Form({ existingHabit, submitting, onSubmit } : FormProps) {
+  const [name, setName] = useState(existingHabit?.name || '');
+  const [description, setDescription] = useState(existingHabit?.description || '');
+  const [frequency, setFrequency] = useState(existingHabit?.frequency || 7);
+  const [color, setColor] = useState(existingHabit?.color || 'hsl(0, 100%, 71%)');
   const [error, setError] = useState('');
 
   const colors = [
@@ -39,6 +37,7 @@ export default function Form({ existingName, existingDescription, existingColor,
   const onSave = async () => {
     if (!name) {
       setError('Name is required');
+      setTimeout(() => setError(''), 3000);
       return;
     }
 
@@ -87,8 +86,8 @@ export default function Form({ existingName, existingDescription, existingColor,
           ))}
         </View>
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Button style={[styles.saveButton, { backgroundColor: color }]} mode='contained' onPress={onSave}>
-          <Text style={styles.saveButtonText}>Add Habit</Text>
+        <Button style={[styles.saveButton, { backgroundColor: color }]} mode='contained' onPress={onSave} loading={submitting} disabled={submitting}>
+          <Text style={styles.saveButtonText}>{existingHabit ? 'Update' : 'Add'} Habit</Text>
         </Button>
       </View>
     </View>

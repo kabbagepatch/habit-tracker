@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useContext, useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+// @ts-ignore
+import { useLocalSearchParams } from 'expo-router';
 
 import Login from '../components/login';
+import Loading from '../components/loading';
 import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
 import HabitCalendar from '../components/calendar';
+import { HabitsContext } from '@/hooks/HabitContext';
 
 export default function ViewHabit() {
   const { loading, user } = useUserInfo();
@@ -13,23 +16,31 @@ export default function ViewHabit() {
   const [loadingHabit, setLoadingHabit] = useState(true);
   const [habit, setHabit] = useState<Habit>();
 
-  const getHabit = async (id : string) => {
-    const habit = await habitService.getHabit(id);
-    if (habit) {
-      setHabit(habit);
+  const { allHabits } = useContext(HabitsContext);
+
+  const retrieveHabit = async (id : string) => {
+    if (allHabits && allHabits[id]) {
+      setHabit(allHabits[id]);
+      setLoadingHabit(false);
+      return;
+    }
+
+    const retrievedHabit = await habitService.getHabit(id);
+    if (retrievedHabit) {
+      setHabit(retrievedHabit);
     }
     setLoadingHabit(false);
   }
 
   useEffect(() => {
     if (user) {
-      getHabit(id);
+      retrieveHabit(id);
     }
   }, [user]);
 
-  if (loading) return <Text>Loading...</Text>
+  if (loading) return <Loading />
   if (!user) return <Login />;
-  if (loadingHabit) return <Text>Loading...</Text>
+  if (loadingHabit) return <Loading />
   if (!habit) return <Text>Habit not found</Text>
 
   const onCheck = async (date : Date, isChecked : boolean) => {
@@ -44,6 +55,7 @@ export default function ViewHabit() {
       <Text style={[styles.title, { color: habit.color }]}>{habit.name}</Text>
       <Text style={[styles.info, { color: habit.color }]}>{habit.description}</Text>
       <Text style={styles.info}>{habit.frequency} times a week</Text>
+      <Text style={styles.info}>Current streak: {habit.currentStreak} days</Text>
       <View style={styles.section}>
         <Text style={[styles.title, styles.subtitle, { color: habit.color }]}>Calendar</Text>
         <HabitCalendar habit={habit} nChecks={100} onCheck={onCheck} paddingHorizontal={15} />
@@ -56,7 +68,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     minWidth: 300,
-    maxHeight: 420,
+    maxHeight: 450,
     backgroundColor: 'white',
     borderRadius: 10,
     margin: '1%',

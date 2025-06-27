@@ -1,50 +1,55 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { useContext, useEffect, useState } from 'react';
+// @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import Login from '../components/login';
 import HabitForm from '../components/form';
+import Loading from '../components/loading';
 import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
+
+import { HabitsContext } from '@/hooks/HabitContext';
 
 export default function Update() {
   const router = useRouter();
   const { loading, user } = useUserInfo();
-  // const { id } = router.params.id;
   const { id } = useLocalSearchParams<{ id: string }>();
   const [loadingHabit, setLoadingHabit] = useState(true);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [frequency, setFrequency] = useState(0);
-  const [color, setColor] = useState('');
+  const [habit, setHabit] = useState<Habit | undefined>(undefined);
 
-  const getHabit = async (id : string) => {
-    const habit = await habitService.getHabit(id);
-    if (habit) {
-      setName(habit.name);
-      setDescription(habit.description);
-      setFrequency(habit.frequency);
-      setColor(habit.color);
+  const { allHabits, updateHabit } = useContext(HabitsContext);
+  
+  const retrieveHabit = async (id : string) => {
+    if (allHabits && allHabits[id]) {
+      setHabit(allHabits[id]);
+      setLoadingHabit(false);
+      return;
+    }
+
+    const retrievedHabit = await habitService.getHabit(id);
+    if (retrievedHabit) {
+      setHabit(retrievedHabit);
     }
     setLoadingHabit(false);
   }
 
   useEffect(() => {
     if (user) {
-      getHabit(id);
+      retrieveHabit(id);
     }
   }, [user]);
 
-  if (loading) return <Text>Loading...</Text>
+  if (loading) return <Loading />
   if (!user) return <Login />;
-  if (loadingHabit) return <Text>Loading...</Text>
+  if (loadingHabit) return <Loading />
 
   const onSubmit = async (name: string, description: string, frequency: number, color: string) => {
-    await habitService.updateHabit(id, {name, description, frequency, color});
-    router.dismissTo('/?replace=true');
+    habitService.updateHabit(id, {name, description, frequency, color});
+    updateHabit?.(id, {name, description, frequency, color});
+    router.dismissTo('/');
   }
 
   return (
-    <HabitForm existingName={name} existingDescription={description} existingFrequency={frequency} existingColor={color} onSubmit={onSubmit} />
+    <HabitForm existingHabit={habit} onSubmit={onSubmit} />
   )
 };

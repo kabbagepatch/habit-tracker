@@ -3,15 +3,15 @@ import axios from 'axios';
 import { firebaseAuth } from '../app/firebaseApp';
 let auth = firebaseAuth;
 
-const baseUrl = 'https://habitsapi-426700.uc.r.appspot.com'
+const baseUrl = 'http://localhost:8080' // 'https://habitsapi-426700.uc.r.appspot.com';
 
-export const getHabits = async () : Promise<Habit[] | undefined> => {
+export const getHabits = async () : Promise<{ [key: string]: Habit } | undefined> => {
   try {
     const res = await axios.get(
       `${baseUrl}/habits`,
       { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
     );
-    return res.data.habits;
+    return res.data;
   } catch (e : any) {
     console.log(e.status);
   }

@@ -1,35 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { StatusBar, Text, View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { FAB, IconButton } from 'react-native-paper';
+// @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
+
 import Login from './components/login';
+import HabitCalendar from './components/calendar';
+import Loading from './components/loading';
 import { habitService } from '../service';
 import useUserInfo from '../hooks/useUserInfo';
-import HabitCalendar from './components/calendar';
+import { HabitsContext } from '@/hooks/HabitContext';
 
 export default function Index() {
   const { replace } = useLocalSearchParams();
   const router = useRouter();
   const { loading : loadingUser, user } = useUserInfo();
   const [loadingHabits, setLoadingHabits] = useState(true);
-  const [userHabits, setUserHabits] = useState<Habit[]>([]);
 
-  const setHabits = async () => {
+  const { allHabits, setAllHabits, updateHabit, deleteHabit } = useContext(HabitsContext);
+
+  const retrieveHabits = async () => {
     setLoadingHabits(true);
     const habits = await habitService.getHabits();
     setLoadingHabits(false);
     if (habits) {
-      setUserHabits(habits);
+      setAllHabits(habits);
     }
   }
 
-  const onCheck = async (habitInd : number, date : Date, isChecked : boolean) => {
+  const onCheck = async (habitId : string, date : Date, isChecked : boolean) => {
     const dateString = date.toLocaleDateString();
-    const habit = userHabits[habitInd];
-    const updatedHabit = await habitService.checkIn(habit.id, dateString, !isChecked);
-    if (!updatedHabit) return;
-    setUserHabits(userHabits.map((h, i) => i === habitInd ? { ...h, checkIns: updatedHabit.checkIns, currentStreak: updatedHabit.currentStreak } : h));
+
+    // Optimistically update the habit
+    const updatedHabit = { ...allHabits[habitId] };
+    const checkInInd = updatedHabit.checkIns.findIndex((checkIn : any) => checkIn.date == dateString);
+    if (checkInInd === -1) {
+      updatedHabit.checkIns.push({ date: dateString, status: !isChecked });
+    } else {
+      updatedHabit.checkIns[checkInInd].status = !isChecked;
+    }
+    updateHabit?.(habitId, updatedHabit);
+
+    habitService.checkIn(habitId, dateString, !isChecked).then((updatedHabit) => {
+      if (updatedHabit) {
+        updateHabit?.(habitId, updatedHabit);
+      }
+    });
   }
 
   const onUpdate = (habitId : string) => {
@@ -39,28 +56,32 @@ export default function Index() {
 
   const onDelete = async (habitId : string) => {
     if (confirm('Are you sure you want to delete this habit?') === false) return;
-    await habitService.deleteHabit(habitId);
-
-    setUserHabits(userHabits.filter((h) => h.id !== habitId));
+    habitService.deleteHabit(habitId);
+    deleteHabit?.(habitId);
   }
 
   useEffect(() => {
     if (user || replace) {
-      setHabits();
+      retrieveHabits();
       if (replace) {
         router.replace('/');
       }
     }
   }, [user, replace]);
 
-  if (loadingUser) return <Text>Loading...</Text>
+  if (loadingUser) return <Loading />;
   if (!user) return <Login />;
-  if (loadingHabits) return <Text>Loading...</Text>
+  if (loadingHabits) return <Loading />;
 
-  if (userHabits.length === 0) {
+  if (Object.keys(allHabits).length === 0) {
     return (
       <View style={styles.container}>
         <Text style={{ fontSize: 20 }}>No habits found</Text>
+        <FAB
+          style={styles.createButton}
+          icon='plus'
+          onPress={() => router.navigate('/create')}
+        />
       </View>
     );
   }
@@ -81,10 +102,11 @@ export default function Index() {
       <View style={styles.habitsContainer}>
         <FlatList
           style={{ paddingBottom: 70 }}
-          data={userHabits}
-          keyExtractor={(item : any) => item.id.toString()}
-          renderItem={({ item, index }) => (
-            <View style={styles.habitContainer}>
+          data={Object.keys(allHabits)}
+          keyExtractor={(item : any) => item.toString()}
+          renderItem={({ item: key }) => {
+            const item = allHabits[key];
+            return (<View style={styles.habitContainer}>
               <View style={styles.habit}>
                 <View style={styles.habitNameContainer}> 
                   <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
@@ -95,10 +117,10 @@ export default function Index() {
                     <IconButton icon='delete' iconColor='hsla(0, 100%, 50%, 0.66)' style={{ margin: 0 }} onPress={() => onDelete(item.id)} />
                   </View>
                 </View>
-                <HabitCalendar habit={item} nChecks={15} onCheck={(date, isChecked) => onCheck(index, date, isChecked)} height={50} />
+                <HabitCalendar habit={item} nChecks={15} onCheck={(date, isChecked) => onCheck(key, date, isChecked)} height={50} />
               </View>
-            </View>
-          )}
+            </View>)
+          }}
         />
         <FAB
           style={styles.createButton}
@@ -177,6 +199,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: 'hsl(296, 100.00%, 87.30%)'
+    backgroundColor: 'hsla(0, 100%, 71%, 1)'
   }
 });
