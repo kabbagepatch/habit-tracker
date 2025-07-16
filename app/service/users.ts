@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, up
 
 import firebaseApp from '../app/firebaseApp';
 
-const baseUrl = 'https://habitsapi-426700.uc.r.appspot.com';
+const baseUrl = process.env.EXPO_PUBLIC_BASE_URL || 'http://localhost:8080';
 
 export const signUp = async (email : string, password : string, name : string) => {
   const auth = getAuth(firebaseApp);

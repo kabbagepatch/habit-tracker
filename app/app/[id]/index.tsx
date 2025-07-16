@@ -9,6 +9,7 @@ import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
 import HabitCalendar from '../components/calendar';
 import { HabitsContext } from '@/hooks/HabitContext';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function ViewHabit() {
   const { loading, user } = useUserInfo();
@@ -16,7 +17,8 @@ export default function ViewHabit() {
   const [loadingHabit, setLoadingHabit] = useState(true);
   const [habit, setHabit] = useState<Habit>();
 
-  const { allHabits } = useContext(HabitsContext);
+  const { allHabits, updateHabit } = useContext(HabitsContext);
+  const { colors } = useTheme();
 
   const retrieveHabit = async (id : string) => {
     if (allHabits && allHabits[id]) {
@@ -48,16 +50,17 @@ export default function ViewHabit() {
     const updatedHabit = await habitService.checkIn(id, dateString, !isChecked);
     if (!updatedHabit) return;
     setHabit({ ...habit, checkIns: updatedHabit.checkIns, currentStreak: updatedHabit.currentStreak });
+    if (updateHabit) updateHabit(id, { ...habit, checkIns: updatedHabit.checkIns, currentStreak: updatedHabit.currentStreak });
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.title, { color: habit.color }]}>{habit.name}</Text>
+    <View style={[styles.container, { backgroundColor: colors.card }]}>
+      <Text style={[styles.title, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>{habit.name}</Text>
       <Text style={[styles.info, { color: habit.color }]}>{habit.description}</Text>
-      <Text style={styles.info}>{habit.frequency} times a week</Text>
-      <Text style={styles.info}>Current streak: {habit.currentStreak} days</Text>
+      <Text style={[styles.info, { color: colors.text }]}>{habit.frequency} times a week</Text>
+      <Text style={[styles.info, { color: colors.text }]}>Current streak: {habit.currentStreak} days</Text>
       <View style={styles.section}>
-        <Text style={[styles.title, styles.subtitle, { color: habit.color }]}>Calendar</Text>
+        <Text style={[styles.title, styles.subtitle, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>Calendar</Text>
         <HabitCalendar habit={habit} nChecks={100} onCheck={onCheck} paddingHorizontal={15} />
       </View>
     </View>
@@ -69,7 +72,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 300,
     maxHeight: 450,
-    backgroundColor: 'white',
     borderRadius: 10,
     margin: '1%',
     shadowColor: 'hsl(0, 0%, 0%)',
@@ -84,10 +86,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     marginBottom: 10,
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 2,
-    backgroundColor: 'hsl(0, 0%, 95%)',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
@@ -102,7 +102,6 @@ const styles = StyleSheet.create({
   info: {
     fontSize: 18,
     marginBottom: 8,
-    color: 'hsl(0, 0%, 20%)',
     paddingHorizontal: 15,
   },
   habitChecks: {

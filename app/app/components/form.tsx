@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
+import { useTheme } from '@/hooks/useTheme';
 
 type FormProps = {
   existingHabit?: Habit;
@@ -15,7 +16,9 @@ export default function Form({ existingHabit, submitting, onSubmit } : FormProps
   const [color, setColor] = useState(existingHabit?.color || 'hsl(0, 100%, 71%)');
   const [error, setError] = useState('');
 
-  const colors = [
+  const { colors } = useTheme();
+
+  const habitColors = [
     'hsla(0, 100%, 71%, 1)', // coral
     'hsla(176, 56%, 55%, 1)', // turquoise
     'hsla(191, 60%, 55%, 1)', // sky blue
@@ -46,8 +49,8 @@ export default function Form({ existingHabit, submitting, onSubmit } : FormProps
 
   return (
     <View style={styles.container}>
-      <View style={styles.form}>
-        <Text style={styles.title}>Create a new habit</Text>
+      <View style={[styles.form, { backgroundColor: colors.card }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Create a new habit</Text>
         <TextInput
           label='Name'
           value={name}
@@ -73,7 +76,7 @@ export default function Form({ existingHabit, submitting, onSubmit } : FormProps
           style={styles.input}
         />
         <View style={styles.colorPicker}>
-          {colors.map((c) => (
+          {habitColors.map((c) => (
             <TouchableOpacity
               key={c}
               style={[
@@ -87,7 +90,7 @@ export default function Form({ existingHabit, submitting, onSubmit } : FormProps
         </View>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button style={[styles.saveButton, { backgroundColor: color }]} mode='contained' onPress={onSave} loading={submitting} disabled={submitting}>
-          <Text style={styles.saveButtonText}>{existingHabit ? 'Update' : 'Add'} Habit</Text>
+          <Text style={[styles.saveButtonText, { color: colors.text }]}>{existingHabit ? 'Update' : 'Add'} Habit</Text>
         </Button>
       </View>
     </View>
@@ -106,7 +109,6 @@ const styles = StyleSheet.create({
     maxHeight: 400,
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'white',
     padding: 15,
     borderRadius: 10,
     margin: '1%',

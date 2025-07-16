@@ -34,7 +34,7 @@ export default function HabitCalendar({ habit, nChecks, onCheck, height, padding
           const date = new Date();
           date.setDate(date.getDate() - i);
           const checkedColor = color || 'hsl(0, 0%, 60%)';
-          const unCheckedColor = color ? color.replace(', 1)', ', 0.15)') :'hsla(0, 0%, 60%, 0.15)';
+          const unCheckedColor = color ? color.replace(', 1)', ', 0.25)') :'hsla(0, 0%, 60%, 0.25)';
           return (
             <TouchableOpacity
               key={i}

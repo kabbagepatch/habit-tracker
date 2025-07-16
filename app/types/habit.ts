@@ -23,6 +23,8 @@ interface HabitData {
   description: string;
   frequency: number;
   color: string;
+  checkIns: CheckIn[];
+  currentStreak: number;
 }
 
 interface Habits { 

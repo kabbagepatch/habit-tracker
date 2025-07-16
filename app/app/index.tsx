@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { StatusBar, Text, View, FlatList, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { FAB, IconButton } from 'react-native-paper';
 // @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -11,12 +11,14 @@ import Loading from './components/loading';
 import { habitService } from '../service';
 import useUserInfo from '../hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function Index() {
   const { replace } = useLocalSearchParams();
   const router = useRouter();
   const { loading : loadingUser, user } = useUserInfo();
   const [loadingHabits, setLoadingHabits] = useState(true);
+  const { colors } = useTheme();
 
   const { allHabits, setAllHabits, updateHabit, deleteHabit } = useContext(HabitsContext);
 
@@ -76,7 +78,7 @@ export default function Index() {
   if (Object.keys(allHabits).length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={{ fontSize: 20 }}>No habits found</Text>
+        <Text style={{ fontSize: 20, color: colors.text }}>No habits found</Text>
         <FAB
           style={styles.createButton}
           icon='plus'
@@ -106,15 +108,15 @@ export default function Index() {
           keyExtractor={(item : any) => item.toString()}
           renderItem={({ item: key }) => {
             const item = allHabits[key];
-            return (<View style={styles.habitContainer}>
+            return (<View style={[styles.habitContainer, { backgroundColor: colors.card }]}>
               <View style={styles.habit}>
                 <View style={styles.habitNameContainer}> 
                   <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
                     {item.name + ` (${isCheckedToday(item) ? item.currentStreak : 0})`}
                   </Text>
                   <View style={styles.habitButtons}>
-                    <IconButton icon='pencil' iconColor='hsla(204, 100.00%, 50.00%, 0.66)' style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />
-                    <IconButton icon='delete' iconColor='hsla(0, 100%, 50%, 0.66)' style={{ margin: 0 }} onPress={() => onDelete(item.id)} />
+                    <IconButton icon='pencil' iconColor='hsl(204, 100.00%, 50.00%)' style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />
+                    <IconButton icon='delete' iconColor='hsl(0, 100%, 50%)' style={{ margin: 0 }} onPress={() => onDelete(item.id)} />
                   </View>
                 </View>
                 <HabitCalendar habit={item} nChecks={15} onCheck={(date, isChecked) => onCheck(key, date, isChecked)} height={50} />
@@ -151,7 +153,6 @@ const styles = StyleSheet.create({
   habitContainer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'white',
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,

@@ -61,12 +61,7 @@ app.get('/', (req, res) => {
   res.send('Hello from Habits App Engine!');
 });
 
-app.use(cors({
-  origin: process.env.FRONT_END_URL || 'http://localhost:8081', // 'https://myhabitstracker.netlify.app',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Authorization', 'Content-Type'],
-  credentials: true
-}));
+app.use(cors());
 
 app.use('/users', userRoutes);
 app.use('/habits', authenticate, habitRoutes);
