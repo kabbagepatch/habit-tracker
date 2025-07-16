@@ -6,7 +6,7 @@ const context : {
   theme: 'light' | 'dark',
   toggleTheme: () => void,
 } = {
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
 }
 
@@ -17,7 +17,7 @@ const THEME_STORAGE_KEY = '@app_theme';
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
   console.log('System color scheme:', systemColorScheme);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
  
   useEffect(() => {
     loadSavedTheme();
