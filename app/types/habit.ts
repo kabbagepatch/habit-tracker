@@ -13,7 +13,7 @@ interface Habit {
   currentStreak: number;
   longestStreak: number;
   lastCheckInDate: string;
-  checkIns: CheckIn[];
+  checkInMasks: { [key: string]: string };
   createdAt: string;
   updatedAt: string;
 }
@@ -23,7 +23,6 @@ interface HabitData {
   description: string;
   frequency: number;
   color: string;
-  checkIns: CheckIn[];
   currentStreak: number;
 }
 

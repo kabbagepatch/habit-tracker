@@ -9,6 +9,19 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+function getDayOfYear(date) {
+    const start = new Date(date.getFullYear(), 0, 0);
+    const diff = date.getTime() - start.getTime();
+    return Math.floor(diff / ONE_DAY_MS);
+}
+
+function getInitialCheckInMask(year) {
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  return "0".repeat(isLeapYear ? 366 : 365);
+}
+
 // Create habit
 router.post('/', jsonParser, async (req, res, next) => {
   const {
@@ -26,6 +39,8 @@ router.post('/', jsonParser, async (req, res, next) => {
 
   try {
     const habitKey = datastore.key('Habit');
+    const curDate = new Date();
+    const year = curDate.getFullYear();
     const newHabit = {
       key: habitKey,
       data: {
@@ -34,12 +49,9 @@ router.post('/', jsonParser, async (req, res, next) => {
         description,
         frequency, // times per week
         color,
-        currentStreak : 0,
-        longestStreak : 0,
-        lastCheckInDate: '',
-        checkIns: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        checkInMasks: { [`${year}`]: getInitialCheckInMask(year) },
+        createdAt: curDate,
+        updatedAt: curDate,
       }
     }
     await datastore.save(newHabit);
@@ -64,8 +76,10 @@ router.get('/', async (req, res, next) => {
     habits.forEach(habit => {
       habit.id = habit[datastore.KEY].id;
       habitsObject[habit.id] = habit;
-      if (skipCheckins === 'true') {
-        delete habit.checkIns;
+      if (!habit.checkInMasks) {
+        habit.checkInMasks = {};
+        const year = new Date().getFullYear();
+        habit.checkInMasks[year] = getInitialCheckInMask(year);
       }
       return habit;
     });
@@ -119,18 +133,16 @@ router.put('/:id', jsonParser, async (req, res, next) => {
     habit.updatedAt = new Date();
 
     await datastore.save({ key: habitKey, data: habit });
-    delete habit.checkIns;
     res.status(200).send({ message: `Habit ${habitKey.id} updated`, habit });
   } catch (err) {
     next(err);
   }
 });
 
-// Check-in habit
 router.post('/:id/check-in', jsonParser, async (req, res, next) => {
   const { id } = req.params;
   const {
-    date,
+    date: dateString,
     status,
   } = req.body;
   const { uid } = req.user;
@@ -145,43 +157,15 @@ router.post('/:id/check-in', jsonParser, async (req, res, next) => {
       return res.status(403).send('Forbidden: You do not have access to this habit');
     }
 
-    if (isAfter(date, habit.lastCheckInDate) && differenceInDays(date, habit.lastCheckInDate) === 1 && status) {
-      habit.lastCheckInDate = date;
-      habit.currentStreak += 1;
-      habit.longestStreak = Math.max(habit.longestStreak, habit.currentStreak);
-      habit.checkIns.push({ date, status })
-    } else {
-      const checkInInd = habit.checkIns.findIndex((checkIn) => isSameDay(checkIn.date, date))
-      if (checkInInd === -1) {
-        habit.checkIns.push({ date, status });
-      } else {
-        habit.checkIns[checkInInd].status = status;
-      }
-
-      // recalculate streaks
-      let currentStreak = 0;
-      let longestStreak = 0;
-      let lastCheckInDate = null;
-      const sortedCheckIns = habit.checkIns.sort((a, b) => new Date(a.date) - new Date(b.date));
-      sortedCheckIns.forEach((checkIn) => {
-        if (lastCheckInDate) {
-          if (differenceInDays(checkIn.date, lastCheckInDate) <= 1) {
-            currentStreak = checkIn.status ? currentStreak + 1 : 0;
-          } else {
-            currentStreak = checkIn.status ? 1 : 0;
-          }
-        } else {
-          currentStreak = checkIn.status ? 1 : 0;
-        }
-
-        lastCheckInDate = checkIn.date;
-        longestStreak = Math.max(longestStreak, currentStreak);
-      });
-
-      habit.currentStreak = currentStreak;
-      habit.longestStreak = longestStreak;
-      habit.lastCheckInDate = lastCheckInDate;
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    if (!habit.checkInMasks) {
+      habit.checkInMasks = {};
     }
+    let checkInsMask = habit.checkInMasks[year] || getInitialCheckInMask(year);
+    const dayOfYear = getDayOfYear(date);
+    checkInsMask = checkInsMask.substring(0, dayOfYear - 1) + (status ? '1' : '0') + checkInsMask.substring(dayOfYear);
+    habit.checkInMasks[year] = checkInsMask;
 
     await datastore.save({ key: habitKey, data: habit });
     res.status(200).send({ message: `Habit ${habitKey.id} updated`, habit });

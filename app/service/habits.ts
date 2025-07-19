@@ -67,7 +67,20 @@ export const deleteHabit = async (habitId : string) : Promise<Habit | undefined>
   }
 }
 
-export const checkIn = async (habitId : string, date : string, status : boolean) : Promise<Habit | undefined> => {
+export const checkIn2 = async (habitId : string, date : string, status : boolean) : Promise<Habit | undefined> => {
+  try {
+    const res = await axios.post(
+      `${baseUrl}/habits/${habitId}/check-in`,
+      { date, status },
+      { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
+    );
+    return res.data.habit;
+  } catch (e : any) {
+    console.log(e.status);
+  }
+}
+
+export const checkIn = async (habitId : string, date : Date, status : boolean) : Promise<Habit | undefined> => {
   try {
     const res = await axios.post(
       `${baseUrl}/habits/${habitId}/check-in`,

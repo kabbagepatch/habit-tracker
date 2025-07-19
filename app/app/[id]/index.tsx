@@ -10,6 +10,7 @@ import useUserInfo from '@/hooks/useUserInfo';
 import HabitCalendar from '../components/calendar';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
+import { calculateStreak, getDayOfYear } from '../util';
 
 export default function ViewHabit() {
   const { loading, user } = useUserInfo();
@@ -46,11 +47,19 @@ export default function ViewHabit() {
   if (!habit) return <Text>Habit not found</Text>
 
   const onCheck = async (date : Date, isChecked : boolean) => {
-    const dateString = date.toLocaleDateString();
-    const updatedHabit = await habitService.checkIn(id, dateString, !isChecked);
-    if (!updatedHabit) return;
-    setHabit({ ...habit, checkIns: updatedHabit.checkIns, currentStreak: updatedHabit.currentStreak });
-    if (updateHabit) updateHabit(id, { ...habit, checkIns: updatedHabit.checkIns, currentStreak: updatedHabit.currentStreak });
+    // Optimistically update the habit
+    const updatedHabit = { ...allHabits[id] };
+    const day = getDayOfYear(date);
+    const initialMask = updatedHabit.checkInMasks[date.getFullYear()];
+    updatedHabit.checkInMasks[date.getFullYear()] = initialMask.substring(0, day - 1) + (isChecked ? '0' : '1') + initialMask.substring(day);
+    setHabit(updatedHabit);
+    updateHabit?.(id, updatedHabit);
+
+    habitService.checkIn(id, date, !isChecked).then((returnedHabit) => {
+      if (returnedHabit && returnedHabit.checkInMasks[date.getFullYear()] !== updatedHabit.checkInMasks[date.getFullYear()]) {
+        updateHabit?.(id, returnedHabit);
+      }
+    });
   }
 
   return (
@@ -58,7 +67,7 @@ export default function ViewHabit() {
       <Text style={[styles.title, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>{habit.name}</Text>
       <Text style={[styles.info, { color: habit.color }]}>{habit.description}</Text>
       <Text style={[styles.info, { color: colors.text }]}>{habit.frequency} times a week</Text>
-      <Text style={[styles.info, { color: colors.text }]}>Current streak: {habit.currentStreak} days</Text>
+      <Text style={[styles.info, { color: colors.text }]}>Current streak: {calculateStreak(habit.checkInMasks)} days</Text>
       <View style={styles.section}>
         <Text style={[styles.title, styles.subtitle, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>Calendar</Text>
         <HabitCalendar habit={habit} nChecks={100} onCheck={onCheck} paddingHorizontal={15} />

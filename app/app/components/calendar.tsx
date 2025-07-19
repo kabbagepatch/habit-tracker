@@ -1,17 +1,13 @@
 import React, { useRef } from 'react';
 import { DimensionValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getDayOfYear } from '../util';
 
 export default function HabitCalendar({ habit, nChecks, onCheck, height, paddingHorizontal } : { habit: Habit, nChecks: number, onCheck: (date: Date, isChecked: boolean) => void, height?: DimensionValue, paddingHorizontal?: DimensionValue }) {
-  const { color, checkIns } = habit;
+  const { color, checkInMasks } = habit;
+
   const isCheckedOn = (date : Date) => {
-    if (!checkIns || checkIns.length === 0) return false;
-    const dateString = date.toLocaleDateString();
-    const checkInInd = checkIns.findIndex((checkIn : any) => checkIn.date == dateString);
-    if (checkInInd === -1) {
-      return false
-    } else {
-      return checkIns[checkInInd].status;
-    }
+    const day = getDayOfYear(date);
+    return checkInMasks[date.getFullYear()][day - 1] === "1";
   }
 
   const debouncingRef = useRef(false);

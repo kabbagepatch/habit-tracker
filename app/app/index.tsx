@@ -12,6 +12,7 @@ import { habitService } from '../service';
 import useUserInfo from '../hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
+import { calculateStreak, getDayOfYear } from './util';
 
 export default function Index() {
   const { replace } = useLocalSearchParams();
@@ -32,21 +33,16 @@ export default function Index() {
   }
 
   const onCheck = async (habitId : string, date : Date, isChecked : boolean) => {
-    const dateString = date.toLocaleDateString();
-
     // Optimistically update the habit
     const updatedHabit = { ...allHabits[habitId] };
-    const checkInInd = updatedHabit.checkIns.findIndex((checkIn : any) => checkIn.date == dateString);
-    if (checkInInd === -1) {
-      updatedHabit.checkIns.push({ date: dateString, status: !isChecked });
-    } else {
-      updatedHabit.checkIns[checkInInd].status = !isChecked;
-    }
+    const day = getDayOfYear(date);
+    const initialMask = updatedHabit.checkInMasks[date.getFullYear()];
+    updatedHabit.checkInMasks[date.getFullYear()] = initialMask.substring(0, day - 1) + (isChecked ? '0' : '1') + initialMask.substring(day);
     updateHabit?.(habitId, updatedHabit);
 
-    habitService.checkIn(habitId, dateString, !isChecked).then((updatedHabit) => {
-      if (updatedHabit) {
-        updateHabit?.(habitId, updatedHabit);
+    habitService.checkIn(habitId, date, !isChecked).then((returnedHabit) => {
+      if (returnedHabit && returnedHabit.checkInMasks[date.getFullYear()] !== updatedHabit.checkInMasks[date.getFullYear()]) {
+        updateHabit?.(habitId, returnedHabit);
       }
     });
   }
@@ -88,16 +84,6 @@ export default function Index() {
     );
   }
 
-  const isCheckedToday = (habit : Habit) => {
-    const dateString = (new Date()).toLocaleDateString();
-    const checkInInd = habit.checkIns.findIndex((checkIn : any) => checkIn.date == dateString);
-    if (checkInInd === -1) {
-      return false
-    } else {
-      return habit.checkIns[checkInInd].status;
-    }
-  }
-
   return (
     <View style={styles.container}>
       <StatusBar />
@@ -112,7 +98,7 @@ export default function Index() {
               <View style={styles.habit}>
                 <View style={styles.habitNameContainer}> 
                   <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
-                    {item.name + ` (${isCheckedToday(item) ? item.currentStreak : 0})`}
+                    {item.name + ` (${item.checkInMasks ? calculateStreak(item.checkInMasks) : item.currentStreak})`}
                   </Text>
                   <View style={styles.habitButtons}>
                     <IconButton icon='pencil' iconColor='hsl(204, 100.00%, 50.00%)' style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />
