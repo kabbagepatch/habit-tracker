@@ -9,6 +9,7 @@ import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
 
 import { HabitsContext } from '@/hooks/HabitContext';
+import { calculateStreaks } from '../util';
 
 export default function Update() {
   const router = useRouter();
@@ -44,8 +45,15 @@ export default function Update() {
   if (loadingHabit) return <Loading />
 
   const onSubmit = async (name: string, description: string, frequency: number, color: string) => {
-    habitService.updateHabit(id, {name, description, frequency, color});
-    updateHabit?.(id, {name, description, frequency, color});
+    habitService.updateHabit(id, { name, description, frequency, color });
+    if (habit && habit.frequency !== frequency) {
+      const streakInfo = calculateStreaks({ ...habit , frequency });
+      const currentStreak = streakInfo.currentStreak;
+      const sanitisedCheckInMasks = streakInfo.updatedMasks || habit.checkInMasks;
+      updateHabit?.(id, { name, description, frequency, color, currentStreak, sanitisedCheckInMasks });
+    } else {
+      updateHabit?.(id, { name, description, frequency, color });
+    }
     router.dismissTo('/');
   }
 

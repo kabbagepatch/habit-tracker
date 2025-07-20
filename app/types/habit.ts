@@ -10,10 +10,9 @@ interface Habit {
   description: string;
   frequency: number;
   color: string;
-  currentStreak: number;
-  longestStreak: number;
-  lastCheckInDate: string;
-  checkInMasks: { [key: string]: string };
+  currentStreak?: number;
+  checkInMasks: { [key: number]: string };
+  sanitisedCheckInMasks?: { [key: number]: string }; // Optional, used for displaying streaks
   createdAt: string;
   updatedAt: string;
 }
@@ -23,7 +22,8 @@ interface HabitData {
   description: string;
   frequency: number;
   color: string;
-  currentStreak: number;
+  currentStreak?: number;
+  sanitisedCheckInMasks?: { [key: number]: string }; // Optional, used for displaying streaks
 }
 
 interface Habits { 

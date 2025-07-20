@@ -49,7 +49,7 @@ router.post('/', jsonParser, async (req, res, next) => {
         description,
         frequency, // times per week
         color,
-        checkInMasks: { [`${year}`]: getInitialCheckInMask(year) },
+        checkInMasks: { [year]: getInitialCheckInMask(year), [year - 1]: getInitialCheckInMask(year - 1) },
         createdAt: curDate,
         updatedAt: curDate,
       }
@@ -64,7 +64,6 @@ router.post('/', jsonParser, async (req, res, next) => {
 // Display all habits
 router.get('/', async (req, res, next) => {
   const { uid } = req.user;
-  const { skipCheckins } = req.query;
 
   try {
     let query = datastore.createQuery('Habit');
@@ -76,11 +75,23 @@ router.get('/', async (req, res, next) => {
     habits.forEach(habit => {
       habit.id = habit[datastore.KEY].id;
       habitsObject[habit.id] = habit;
+      const year = new Date().getFullYear();
       if (!habit.checkInMasks) {
         habit.checkInMasks = {};
-        const year = new Date().getFullYear();
+        habit.checkInMasks[year] = getInitialCheckInMask(year);
+        habit.checkInMasks[year - 1] = getInitialCheckInMask(year - 1);
+        habit.checkInMasks[year + 1] = getInitialCheckInMask(year + 1);
+      }
+      if (!habit.checkInMasks[year + 1]) {
+        habit.checkInMasks[year + 1] = getInitialCheckInMask(year + 1);
+      }
+      if (!habit.checkInMasks[year]) {
         habit.checkInMasks[year] = getInitialCheckInMask(year);
       }
+      if (!habit.checkInMasks[year - 1]) {
+        habit.checkInMasks[year - 1] = getInitialCheckInMask(year - 1);
+      }
+      delete habit.checkIns;
       return habit;
     });
     res.status(200).send(habitsObject);
@@ -95,6 +106,23 @@ router.get('/:id', async (req, res, next) => {
   try {
     const habitKey = datastore.key(['Habit', datastore.int(id)]);
     const [habit] = await datastore.get(habitKey);
+    const year = new Date().getFullYear();
+    if (!habit.checkInMasks) {
+      habit.checkInMasks = {};
+      habit.checkInMasks[year] = getInitialCheckInMask(year);
+      habit.checkInMasks[year - 1] = getInitialCheckInMask(year - 1);
+      habit.checkInMasks[year + 1] = getInitialCheckInMask(year + 1);
+    }
+    if (!habit.checkInMasks[year + 1]) {
+      habit.checkInMasks[year + 1] = getInitialCheckInMask(year + 1);
+    }
+    if (!habit.checkInMasks[year]) {
+      habit.checkInMasks[year] = getInitialCheckInMask(year);
+    }
+    if (!habit.checkInMasks[year - 1]) {
+      habit.checkInMasks[year - 1] = getInitialCheckInMask(year - 1);
+    }
+    delete habit.checkIns;
     res.status(200).send({ habit });
   } catch (err) {
     next(err)

@@ -1,18 +1,18 @@
-import { useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, View, FlatList, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
-import { FAB, IconButton } from 'react-native-paper';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { StatusBar, Text, View, FlatList, StyleSheet } from 'react-native';
+import { FAB } from 'react-native-paper';
 // @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-
 import Login from './components/login';
-import HabitCalendar from './components/calendar';
+import HabitCard from './components/card';
 import Loading from './components/loading';
+
 import { habitService } from '../service';
 import useUserInfo from '../hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
-import { calculateStreak, getDayOfYear } from './util';
+import { calculateStreaks, updateHabitCheckIn } from './util';
 
 export default function Index() {
   const { replace } = useLocalSearchParams();
@@ -28,16 +28,18 @@ export default function Index() {
     const habits = await habitService.getHabits();
     setLoadingHabits(false);
     if (habits) {
+      Object.keys(habits).forEach((key) => {
+        const streakInfo = calculateStreaks(habits[key]);
+        habits[key].currentStreak = streakInfo.currentStreak;
+        habits[key].sanitisedCheckInMasks = streakInfo.updatedMasks || habits[key].checkInMasks;
+      });
       setAllHabits(habits);
     }
   }
 
-  const onCheck = async (habitId : string, date : Date, isChecked : boolean) => {
+  const onCheck = useCallback(async (habitId : string, date : Date, isChecked : boolean) => {
     // Optimistically update the habit
-    const updatedHabit = { ...allHabits[habitId] };
-    const day = getDayOfYear(date);
-    const initialMask = updatedHabit.checkInMasks[date.getFullYear()];
-    updatedHabit.checkInMasks[date.getFullYear()] = initialMask.substring(0, day - 1) + (isChecked ? '0' : '1') + initialMask.substring(day);
+    const updatedHabit = updateHabitCheckIn(allHabits[habitId], date, !isChecked);
     updateHabit?.(habitId, updatedHabit);
 
     habitService.checkIn(habitId, date, !isChecked).then((returnedHabit) => {
@@ -45,18 +47,17 @@ export default function Index() {
         updateHabit?.(habitId, returnedHabit);
       }
     });
-  }
+  }, [allHabits]);
 
-  const onUpdate = (habitId : string) => {
-    console.log('onUpdate', habitId);
+  const onUpdate = useCallback((habitId : string) => {
     router.navigate(`/${habitId}/update`);
-  }
+  }, []);
 
-  const onDelete = async (habitId : string) => {
+  const onDelete = useCallback(async (habitId : string) => {
     if (confirm('Are you sure you want to delete this habit?') === false) return;
     habitService.deleteHabit(habitId);
     deleteHabit?.(habitId);
-  }
+  }, []);
 
   useEffect(() => {
     if (user || replace) {
@@ -94,20 +95,15 @@ export default function Index() {
           keyExtractor={(item : any) => item.toString()}
           renderItem={({ item: key }) => {
             const item = allHabits[key];
-            return (<View style={[styles.habitContainer, { backgroundColor: colors.card }]}>
-              <View style={styles.habit}>
-                <View style={styles.habitNameContainer}> 
-                  <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
-                    {item.name + ` (${item.checkInMasks ? calculateStreak(item.checkInMasks) : item.currentStreak})`}
-                  </Text>
-                  <View style={styles.habitButtons}>
-                    <IconButton icon='pencil' iconColor='hsl(204, 100.00%, 50.00%)' style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />
-                    <IconButton icon='delete' iconColor='hsl(0, 100%, 50%)' style={{ margin: 0 }} onPress={() => onDelete(item.id)} />
-                  </View>
-                </View>
-                <HabitCalendar habit={item} nChecks={15} onCheck={(date, isChecked) => onCheck(key, date, isChecked)} height={50} />
-              </View>
-            </View>)
+            return (
+              <HabitCard
+                id={key}
+                item={item}
+                onUpdate={onUpdate}
+                onDelete={onDelete}
+                onCheck={onCheck}
+              />
+            )
           }}
         />
         <FAB
@@ -130,57 +126,6 @@ const styles = StyleSheet.create({
     width: '100%',
     flex: 1,
     padding: 10,
-  },
-  date: {
-    fontSize: 15,
-    width: 36,
-    textAlign: 'center',
-  },
-  habitContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    shadowColor: 'hsl(0, 0%, 0%)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  habit: {
-    width: '100%',
-  },
-  habitNameContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-  },
-  habitName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  habitButtons: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  habitChecks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  habitCheck: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginHorizontal: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   createButton: {
     position: 'absolute',

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 // @ts-ignore
 import { useLocalSearchParams } from 'expo-router';
@@ -10,27 +10,28 @@ import useUserInfo from '@/hooks/useUserInfo';
 import HabitCalendar from '../components/calendar';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
-import { calculateStreak, getDayOfYear } from '../util';
+import { calculateStreaks, updateHabitCheckIn } from '../util';
 
 export default function ViewHabit() {
   const { loading, user } = useUserInfo();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [loadingHabit, setLoadingHabit] = useState(true);
-  const [habit, setHabit] = useState<Habit>();
 
   const { allHabits, updateHabit } = useContext(HabitsContext);
   const { colors } = useTheme();
 
   const retrieveHabit = async (id : string) => {
     if (allHabits && allHabits[id]) {
-      setHabit(allHabits[id]);
       setLoadingHabit(false);
       return;
     }
 
     const retrievedHabit = await habitService.getHabit(id);
     if (retrievedHabit) {
-      setHabit(retrievedHabit);
+      const streakInfo = calculateStreaks(retrievedHabit);
+      retrievedHabit.currentStreak = streakInfo.currentStreak;
+      retrievedHabit.sanitisedCheckInMasks = streakInfo.updatedMasks || retrievedHabit.checkInMasks;
+      updateHabit?.(id, retrievedHabit);
     }
     setLoadingHabit(false);
   }
@@ -41,18 +42,12 @@ export default function ViewHabit() {
     }
   }, [user]);
 
-  if (loading) return <Loading />
-  if (!user) return <Login />;
-  if (loadingHabit) return <Loading />
-  if (!habit) return <Text>Habit not found</Text>
+  const habit = allHabits[id];
 
-  const onCheck = async (date : Date, isChecked : boolean) => {
+  const onCheck = useCallback(async (date : Date, isChecked : boolean) => {
+    if (!id || !habit) return;
     // Optimistically update the habit
-    const updatedHabit = { ...allHabits[id] };
-    const day = getDayOfYear(date);
-    const initialMask = updatedHabit.checkInMasks[date.getFullYear()];
-    updatedHabit.checkInMasks[date.getFullYear()] = initialMask.substring(0, day - 1) + (isChecked ? '0' : '1') + initialMask.substring(day);
-    setHabit(updatedHabit);
+    const updatedHabit = updateHabitCheckIn(habit, date, !isChecked);
     updateHabit?.(id, updatedHabit);
 
     habitService.checkIn(id, date, !isChecked).then((returnedHabit) => {
@@ -60,17 +55,22 @@ export default function ViewHabit() {
         updateHabit?.(id, returnedHabit);
       }
     });
-  }
+  }, [habit, id]);
+
+  if (loading) return <Loading />
+  if (!user) return <Login />;
+  if (loadingHabit) return <Loading />
+  if (!habit) return <Text>Habit not found</Text>
 
   return (
     <View style={[styles.container, { backgroundColor: colors.card }]}>
       <Text style={[styles.title, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>{habit.name}</Text>
       <Text style={[styles.info, { color: habit.color }]}>{habit.description}</Text>
       <Text style={[styles.info, { color: colors.text }]}>{habit.frequency} times a week</Text>
-      <Text style={[styles.info, { color: colors.text }]}>Current streak: {calculateStreak(habit.checkInMasks)} days</Text>
+      <Text style={[styles.info, { color: colors.text }]}>Current streak: {habit.currentStreak || '0'} days</Text>
       <View style={styles.section}>
         <Text style={[styles.title, styles.subtitle, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>Calendar</Text>
-        <HabitCalendar habit={habit} nChecks={100} onCheck={onCheck} paddingHorizontal={15} />
+        <HabitCalendar habit={habit} nChecks={251} onCheck={onCheck} paddingHorizontal={15} overflowY="scroll" />
       </View>
     </View>
   )
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     minWidth: 300,
-    maxHeight: 450,
+    // maxHeight: 450,
     borderRadius: 10,
     margin: '1%',
     shadowColor: 'hsl(0, 0%, 0%)',
@@ -112,26 +112,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 8,
     paddingHorizontal: 15,
-  },
-  habitChecks: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 15,
-  },
-  habitCheck: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    margin: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  date: {
-    fontSize: 15,
-    width: 36,
-    textAlign: 'center',
   },
 });
