@@ -14,7 +14,7 @@ export const HabitsProvider = ({ children }: { children: React.ReactNode }) => {
   const [allHabits, setAllHabits] = useState<Habits>({});
 
   const setHabit = (habit: Habit) => {
-    setAllHabits(prev => ({ ...prev, [habit.id]: habit }));
+    setAllHabits(prev => ({ ...prev, [habit.id || habit.name.split(' ').join('-')]: habit }));
   };
 
   const updateHabit = (id: string, updatedHabit: HabitData) => {

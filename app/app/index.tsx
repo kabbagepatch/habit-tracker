@@ -91,7 +91,7 @@ export default function Index() {
       <View style={styles.habitsContainer}>
         <FlatList
           style={{ paddingBottom: 70 }}
-          data={Object.keys(allHabits).sort((a, b) => new Date(allHabits[b].createdAt).getTime() - new Date(allHabits[a].createdAt).getTime())}
+          data={Object.keys(allHabits).sort((a, b) => new Date(allHabits[a].createdAt).getTime() - new Date(allHabits[b].createdAt).getTime())}
           keyExtractor={(item : any) => item.toString()}
           renderItem={({ item: key }) => {
             const item = allHabits[key];
