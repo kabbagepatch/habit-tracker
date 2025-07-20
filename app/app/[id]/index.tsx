@@ -70,7 +70,7 @@ export default function ViewHabit() {
       <Text style={[styles.info, { color: colors.text }]}>Current streak: {habit.currentStreak || '0'} days</Text>
       <View style={styles.section}>
         <Text style={[styles.title, styles.subtitle, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>Calendar</Text>
-        <HabitCalendar habit={habit} nChecks={251} onCheck={onCheck} paddingHorizontal={15} overflowY="scroll" />
+        <HabitCalendar habit={habit} nChecks={200} onCheck={onCheck} paddingHorizontal={15} overflowY="scroll" />
       </View>
     </View>
   )
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     minWidth: 300,
-    // maxHeight: 450,
+    maxHeight: 600,
     borderRadius: 10,
     margin: '1%',
     shadowColor: 'hsl(0, 0%, 0%)',
