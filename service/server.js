@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
 });
 
 app.use(cors({
-  origin: process.env.FRONT_END_URL || 'http://localhost:8081', // 'https://myhabitstracker.netlify.app',
+  origin: process.env.FRONT_END_URL || 'https://myhabitstracker.netlify.app',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Authorization', 'Content-Type'],
   credentials: true
