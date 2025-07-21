@@ -22,7 +22,12 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const serviceAccount = require(process.env.ADMIN_ACCOUNT_JSON_PATH);
+let serviceAccount;
+if (process.env.ADMIN_ACCOUNT_KEY) {
+  serviceAccount = JSON.parse(process.env.ADMIN_ACCOUNT_KEY);
+} else {
+  serviceAccount = require(process.env.ADMIN_ACCOUNT_JSON_PATH);
+}
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount)
 });
@@ -62,7 +67,7 @@ app.get('/', (req, res) => {
 });
 
 app.use(cors({
-  origin: process.env.FRONT_END_URL || 'http://localhost:8081', // 'https://myhabitstracker.netlify.app',
+  origin: process.env.FRONT_END_URL || 'https://myhabitstracker.netlify.app',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Authorization', 'Content-Type'],
   credentials: true
