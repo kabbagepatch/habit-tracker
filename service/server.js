@@ -22,7 +22,10 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const serviceAccount = process.env.ADMIN_ACCOUNT_KEY || require(process.env.ADMIN_ACCOUNT_JSON_PATH);
+let serviceAccount = process.env.ADMIN_ACCOUNT_KEY;
+if (!serviceAccount) {
+  serviceAccount = require(process.env.ADMIN_ACCOUNT_JSON_PATH);
+}
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount)
 });
@@ -73,6 +76,6 @@ app.use('/habits', authenticate, habitRoutes);
 
 // Listen to the App Engine-specified port, or 8080 otherwise
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+// app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}...`);
-});
+// });

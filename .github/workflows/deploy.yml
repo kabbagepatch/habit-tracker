@@ -23,7 +23,7 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: Env Test
-        run: echo $API_KEY && node test.js
+        run: echo $API_KEY && node service.js
         working-directory: ./service
         env:
           API_KEY: ${{ secrets.API_KEY }}
