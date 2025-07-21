@@ -13,13 +13,26 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
         with:
-          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
-          project_id: your-gcp-project-id
-          export_default_credentials: true
+          credentials_json: '${{ secrets.GCLOUD_SERVICE_KEY }}'
+          project_id: habitsapi-426700
 
-      - name: Deploy to App Engine
-        run: gcloud app deploy --quiet
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+  
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
         working-directory: ./service
+
+      # - name: Set up Google Cloud SDK
+      #   uses: google-github-actions/setup-gcloud@v1
+      #   with:
+      #     service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
+      #     project_id: your-gcp-project-id
+      #     export_default_credentials: true
+
+      # - name: Deploy to App Engine
+      #   run: gcloud app deploy --quiet
+      #   working-directory: ./service
