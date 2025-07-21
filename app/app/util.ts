@@ -1,6 +1,7 @@
 export function getDayOfYear(date: Date): number {
-  const start = new Date(date.getFullYear(), 0, 0);
-  const diff = date.getTime() - start.getTime();
+  const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+  const current = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const diff = current - start;
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
