@@ -3,7 +3,7 @@ name: Deploy Service to App Engine
 on:
   push:
     branches:
-      - main
+      - test
 
 jobs:
   deploy:
@@ -22,8 +22,8 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
 
-      - name: Deploy to App Engine
-        run: gcloud app deploy --quiet
+      - name: Env Test
+        run: echo $API_KEY
         working-directory: ./service
         env:
           API_KEY: ${{ secrets.API_KEY }}
