@@ -13,14 +13,8 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCLOUD_SERVICE_KEY }}'
-          project_id: habitsapi-426700
-
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
+      - name: 'Npm Install'
+        run: npm install
 
       - name: Env Test
         run: echo $API_KEY && node service.js
