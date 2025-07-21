@@ -18,7 +18,7 @@ jobs:
         working-directory: ./service
 
       - name: Env Test
-        run: echo $API_KEY && node service.js
+        run: echo $API_KEY && node server.js
         working-directory: ./service
         env:
           API_KEY: ${{ secrets.API_KEY }}
