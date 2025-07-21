@@ -22,8 +22,10 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-let serviceAccount = process.env.ADMIN_ACCOUNT_KEY;
-if (!serviceAccount) {
+let serviceAccount;
+if (process.env.ADMIN_ACCOUNT_KEY) {
+  serviceAccount = JSON.parse(process.env.ADMIN_ACCOUNT_KEY);
+} else {
   serviceAccount = require(process.env.ADMIN_ACCOUNT_JSON_PATH);
 }
 firebaseAdmin.initializeApp({
