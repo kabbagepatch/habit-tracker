@@ -15,6 +15,7 @@ jobs:
 
       - name: 'Npm Install'
         run: npm install
+        working-directory: ./service
 
       - name: Env Test
         run: echo $API_KEY && node service.js
