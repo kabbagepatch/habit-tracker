@@ -21,8 +21,6 @@ const firebaseConfig = {
   measurementId: 'G-TF2VLVQTLR'
 };
 
-console.log('process.env', process.env);
-
 firebase.initializeApp(firebaseConfig);
 const serviceAccount = process.env.ADMIN_ACCOUNT_KEY || require(process.env.ADMIN_ACCOUNT_JSON_PATH);
 firebaseAdmin.initializeApp({
