@@ -27,3 +27,4 @@ jobs:
         working-directory: ./service
         env:
           API_KEY: ${{ secrets.API_KEY }}
+          ADMIN_ACCOUNT_KEY: ${{ secrets.ADMIN_ACCOUNT_KEY }}

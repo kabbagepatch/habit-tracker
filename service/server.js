@@ -22,7 +22,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const serviceAccount = require(process.env.ADMIN_ACCOUNT_JSON_PATH);
+const serviceAccount = process.env.ADMIN_ACCOUNT_KEY || require(process.env.ADMIN_ACCOUNT_JSON_PATH);
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount)
 });
