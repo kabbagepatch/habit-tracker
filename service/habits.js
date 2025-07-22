@@ -9,12 +9,11 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
 function getDayOfYear(date) {
-    const start = new Date(date.getFullYear(), 0, 0);
-    const diff = date.getTime() - start.getTime();
-    return Math.floor(diff / ONE_DAY_MS);
+  const start = Date.UTC(date.getFullYear(), 0, 0);
+  const current = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const diff = current - start;
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
 function getInitialCheckInMask(year) {

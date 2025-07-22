@@ -76,7 +76,9 @@ export function calculateStreaks(habit : Habit): { currentStreak: number, update
         updatedMasks[curYear] = updatedMasks[curYear].substring(0, i) + '0' + updatedMasks[curYear].substring(i + 1);
         i += 1;
       }
-      break;
+      if (i !== dayOfYear) {
+        break;
+      }
     }
   }
   let year = curYear;
