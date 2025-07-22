@@ -84,7 +84,7 @@ export const checkIn = async (habitId : string, date : Date, status : boolean) :
   try {
     const res = await axios.post(
       `${baseUrl}/habits/${habitId}/check-in`,
-      { date, status },
+      { date: date.toDateString(), status },
       { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
     );
     return res.data.habit;
