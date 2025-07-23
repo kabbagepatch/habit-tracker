@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 
-import { firebaseAuth } from "../app/firebaseApp";
+import { firebaseAuth } from "@/firebaseApp";
 let auth = firebaseAuth;
 
 function useUserInfo() {

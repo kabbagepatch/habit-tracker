@@ -3,14 +3,14 @@ import { StyleSheet, Text, View } from 'react-native';
 // @ts-ignore
 import { useLocalSearchParams } from 'expo-router';
 
-import Login from '../components/login';
-import Loading from '../components/loading';
+import Login from '@/components/login';
+import Loading from '@/components/loading';
 import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
-import HabitCalendar from '../components/calendar';
+import HabitCalendar from '@/components/calendar';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
-import { calculateStreaks, updateHabitCheckIn } from '../util';
+import { calculateStreaks, updateHabitCheckIn } from '@/util';
 
 export default function ViewHabit() {
   const { loading, user } = useUserInfo();

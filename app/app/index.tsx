@@ -4,15 +4,15 @@ import { FAB } from 'react-native-paper';
 // @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-import Login from './components/login';
-import HabitCard from './components/card';
-import Loading from './components/loading';
+import Login from '@/components/login';
+import HabitCard from '@/components/card';
+import Loading from '@/components/loading';
 
 import { habitService } from '../service';
 import useUserInfo from '../hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
-import { calculateStreaks, updateHabitCheckIn } from './util';
+import { calculateStreaks, updateHabitCheckIn } from '@/util';
 
 export default function Index() {
   const { replace } = useLocalSearchParams();

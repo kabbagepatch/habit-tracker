@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { DimensionValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { getDayOfYear } from '../util';
+import { getDayOfYear } from '@/util';
 
 export default function HabitCalendar({ habit, nChecks, onCheck, height, paddingHorizontal, overflowY } : { habit: Habit, nChecks: number, onCheck: (date: Date, isChecked: boolean) => void, height?: DimensionValue, paddingHorizontal?: DimensionValue, overflowY?: string }) {
   const { color, checkInMasks, sanitisedCheckInMasks } = habit;

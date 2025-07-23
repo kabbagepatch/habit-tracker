@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { firebaseAuth } from '../app/firebaseApp';
+import { firebaseAuth } from '@/firebaseApp';
 let auth = firebaseAuth;
 
 const baseUrl = process.env.EXPO_PUBLIC_BASE_URL || 'http://localhost:8080';

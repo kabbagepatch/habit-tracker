@@ -2,14 +2,14 @@ import { useContext, useEffect, useState } from 'react';
 // @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-import Login from '../components/login';
-import HabitForm from '../components/form';
-import Loading from '../components/loading';
+import Login from '@/components/login';
+import HabitForm from '@/components/form';
+import Loading from '@/components/loading';
 import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
 
 import { HabitsContext } from '@/hooks/HabitContext';
-import { calculateStreaks } from '../util';
+import { calculateStreaks } from '@/util';
 
 export default function Update() {
   const router = useRouter();

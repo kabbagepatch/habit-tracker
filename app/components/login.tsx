@@ -3,8 +3,8 @@ import { Button, Pressable, StyleSheet, Text, TextInput, View } from 'react-nati
 
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
-import firebaseApp from "../firebaseApp";
-import { userService } from '../../service';
+import firebaseApp from "@/firebaseApp";
+import { userService } from '../service';
 
 export default function Login() {
   const [mode, setMode] = useState('LOGIN')
