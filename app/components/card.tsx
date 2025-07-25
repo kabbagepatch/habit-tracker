@@ -23,7 +23,7 @@ export default function HabitCard({ id, item, onUpdate, onDelete, onCheck }: Pro
       <View style={styles.habit}>
         <View style={styles.habitNameContainer}> 
           <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
-            {item.name + ` (${item.currentStreak || '0'})`}
+            {item.name + ` (${item.currentStreak || '0'}/75)`}
           </Text>
           <View style={styles.habitButtons}>
             <IconButton icon='pencil' iconColor='hsl(204, 100%, 50%)' style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />

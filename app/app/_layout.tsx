@@ -25,7 +25,7 @@ function MyStack() {
             borderBottomColor: colors.header,
           },
           headerTintColor: colors.text,
-          headerTitle: () => <Text variant='headlineSmall' onPress={() => router.dismissTo('/')}>Habit Tracker</Text>,
+          headerTitle: () => <Text variant='headlineSmall' onPress={() => router.dismissTo('/')}>75 Hotter</Text>,
           headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', marginRight: 10 }}>
             <Button
               uppercase

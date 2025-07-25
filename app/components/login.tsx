@@ -87,7 +87,7 @@ export default function Login() {
   return (
     <View style={styles.page}>
       <View style={styles.container}>
-        <Text style={styles.title}>Habit Tracker</Text>
+        <Text style={styles.title}>75 Hotter</Text>
 
         <View style={styles.inputView}>
           {mode === 'SIGNUP' && 

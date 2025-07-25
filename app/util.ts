@@ -11,11 +11,30 @@ export function updateHabitCheckIn(habit : Habit, date : Date, status : boolean)
   const initialMask = updatedHabit.checkInMasks[date.getFullYear()];
   const updatedMask = initialMask.substring(0, day - 1) + (status ? '1' : '0') + initialMask.substring(day);
   updatedHabit.checkInMasks = { ...updatedHabit.checkInMasks, [date.getFullYear()]: updatedMask };
-  const streakInfo = calculateStreaks(updatedHabit);
-  updatedHabit.currentStreak = streakInfo.currentStreak;
-  updatedHabit.sanitisedCheckInMasks = streakInfo.updatedMasks || updatedHabit.checkInMasks;
+  updatedHabit.currentStreak = calculateLast75DaysCount(updatedHabit);
+
+  // const streakInfo = calculateStreaks(updatedHabit);
+  // updatedHabit.currentStreak = streakInfo.currentStreak;
+  // updatedHabit.sanitisedCheckInMasks = streakInfo.updatedMasks || updatedHabit.checkInMasks;
 
   return updatedHabit;
+}
+
+export function calculateLast75DaysCount(habit: Habit): number {
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - 75);
+  const startDayOfYear = getDayOfYear(startDate);
+  const todayDayOfYear = getDayOfYear(today);
+  const year = today.getFullYear();
+  const mask = habit.checkInMasks[year] || '';
+  let count = 0;
+  for (let i = startDayOfYear; i <= todayDayOfYear; i++) {
+    if (mask[i - 1] === '1') {
+      count++;
+    }
+  }
+  return count;
 }
 
 export function calculateStreaks(habit : Habit): { currentStreak: number, updatedMasks?: { [key: number]: string } } {

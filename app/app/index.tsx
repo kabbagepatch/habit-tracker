@@ -12,7 +12,7 @@ import { habitService } from '../service';
 import useUserInfo from '../hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
-import { calculateStreaks, updateHabitCheckIn } from '@/util';
+import { calculateLast75DaysCount, updateHabitCheckIn } from '@/util';
 
 export default function Index() {
   const { replace } = useLocalSearchParams();
@@ -29,9 +29,10 @@ export default function Index() {
     setLoadingHabits(false);
     if (habits) {
       Object.keys(habits).forEach((key) => {
-        const streakInfo = calculateStreaks(habits[key]);
-        habits[key].currentStreak = streakInfo.currentStreak;
-        habits[key].sanitisedCheckInMasks = streakInfo.updatedMasks || habits[key].checkInMasks;
+        habits[key].currentStreak = calculateLast75DaysCount(habits[key]);
+        // const streakInfo = calculateStreaks(habits[key]);
+        // habits[key].currentStreak = streakInfo.currentStreak;
+        // habits[key].sanitisedCheckInMasks = streakInfo.updatedMasks || habits[key].checkInMasks;
       });
       setAllHabits(habits);
     }
