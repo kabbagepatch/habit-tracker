@@ -54,7 +54,7 @@ router.post('/', jsonParser, async (req, res, next) => {
       }
     }
     await datastore.save(newHabit);
-    res.status(201).json({ message: `Habit ${habitKey.id} created`, habit: newHabit.data });
+    res.status(201).json({ message: `Habit ${habitKey.id} created`, habit: { ...newHabit.data, id: habitKey.id } });
   } catch (err) {
     next(err);
   }

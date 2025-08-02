@@ -1,12 +1,13 @@
 require('dotenv').config();
 
-const cors = require('cors');
 const firebase = require('firebase/app');
 const firebaseAdmin = require('firebase-admin');
 const firebaseAuth = require('firebase/auth');
 
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
 
 const userRoutes = require('./users');
 const habitRoutes = require('./habits');
@@ -65,13 +66,6 @@ app.options('*', cors());
 app.get('/', (req, res) => {
   res.send('Hello from Habits App Engine!');
 });
-
-app.use(cors({
-  origin: process.env.FRONT_END_URL || 'https://myhabitstracker.netlify.app',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Authorization', 'Content-Type'],
-  credentials: true
-}));
 
 app.use('/users', userRoutes);
 app.use('/habits', authenticate, habitRoutes);

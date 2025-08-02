@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, View, FlatList, StyleSheet } from 'react-native';
+import { StatusBar, Text, View, FlatList, StyleSheet, Alert, Platform } from 'react-native';
 import { FAB } from 'react-native-paper';
 // @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -55,9 +55,25 @@ export default function Index() {
   }, []);
 
   const onDelete = useCallback(async (habitId : string) => {
-    if (confirm('Are you sure you want to delete this habit?') === false) return;
-    habitService.deleteHabit(habitId);
-    deleteHabit?.(habitId);
+    if (Platform.OS === 'web') {
+      if (confirm('Are you sure you want to delete this habit?') === false) return;
+      habitService.deleteHabit(habitId);
+      deleteHabit?.(habitId);
+      return;
+    }
+
+    Alert.alert('Delete Habit', 'Are you sure you want to delete this habit?', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel pressed'),
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        onPress: () => console.log('Delete pressed'),
+        style: 'destructive',
+      },
+    ]);
   }, []);
 
   useEffect(() => {
