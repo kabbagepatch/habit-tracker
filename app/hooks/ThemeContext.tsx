@@ -16,9 +16,8 @@ const THEME_STORAGE_KEY = '@app_theme';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
-  console.log('System color scheme:', systemColorScheme);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
- 
+
   useEffect(() => {
     loadSavedTheme();
   }, []);

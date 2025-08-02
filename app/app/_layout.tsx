@@ -14,7 +14,7 @@ import { useTheme } from "@/hooks/useTheme";
 function MyStack() {
   const { user } = useUserInfo();
   const router = useRouter();
-  const { theme, colors } = useTheme();
+  const { theme, colors, toggleTheme } = useTheme();
 
   return (
     <PaperProvider theme={theme === 'light' ? MD3LightTheme : MD3DarkTheme}>
@@ -26,7 +26,16 @@ function MyStack() {
           },
           headerTintColor: colors.text,
           headerTitle: () => <Text variant='headlineSmall' onPress={() => router.dismissTo('/')}>75 Hotter</Text>,
-          headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', marginRight: 10 }}>
+          headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', marginRight: 10, flexDirection: 'row' }}>
+            <Button
+              uppercase
+              mode='text'
+              onPress={toggleTheme}
+              labelStyle={{ fontFamily: ' -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif' }}
+              style={{ marginRight: 10 }}
+            >
+              {theme === 'light' ? 'Dark' : 'Light'}
+            </Button>
             <Button
               uppercase
               mode='contained'

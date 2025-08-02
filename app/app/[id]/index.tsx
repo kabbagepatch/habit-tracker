@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     minWidth: 300,
-    maxHeight: 600,
+    maxHeight: 650,
     borderRadius: 10,
     margin: '1%',
     shadowColor: 'hsl(0, 0%, 0%)',

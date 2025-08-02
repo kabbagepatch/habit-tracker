@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     borderColor: '#aaa',
     borderWidth: 1,
     borderRadius: 7,
+    color: 'white',
   },
   error: {
     color: 'red'
