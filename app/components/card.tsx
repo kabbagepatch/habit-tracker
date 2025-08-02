@@ -26,7 +26,7 @@ export default function HabitCard({ id, item, onUpdate, onDelete, onCheck }: Pro
             {item.name + ` (${item.currentStreak || '0'}/75)`}
           </Text>
           <View style={styles.habitButtons}>
-            <IconButton icon='pencil' iconColor='hsl(204, 100%, 50%)' style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />
+            <IconButton icon='pencil' iconColor={item.color || 'hsl(204, 100%, 50%)'} style={{ margin: 0 }} onPress={() => onUpdate(item.id)} />
             <IconButton icon='delete' iconColor='hsl(0, 100%, 50%)' style={{ margin: 0 }} onPress={() => onDelete(item.id)} />
           </View>
         </View>

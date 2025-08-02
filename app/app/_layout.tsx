@@ -1,10 +1,9 @@
 import { Stack } from "expo-router";
 import { View } from "react-native";
-import { Provider as PaperProvider, Text, MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
+import { Provider as PaperProvider, Text, MD3LightTheme, MD3DarkTheme, IconButton } from 'react-native-paper';
 // @ts-ignore
 import { useRouter } from 'expo-router';
 
-import { Button } from "react-native-paper";
 import { userService } from "../service";
 import useUserInfo from "../hooks/useUserInfo";
 import { HabitsProvider } from "@/hooks/HabitContext";
@@ -25,26 +24,10 @@ function MyStack() {
             borderBottomColor: colors.header,
           },
           headerTintColor: colors.text,
-          headerTitle: () => <Text variant='headlineSmall' onPress={() => router.dismissTo('/')}>75 Hotter</Text>,
+          headerTitle: () => <Text variant='titleLarge' onPress={() => router.dismissTo('/')}>75 Hotter</Text>,
           headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', marginRight: 10, flexDirection: 'row' }}>
-            <Button
-              uppercase
-              mode='text'
-              onPress={toggleTheme}
-              labelStyle={{ fontFamily: ' -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif' }}
-              style={{ marginRight: 10 }}
-            >
-              {theme === 'light' ? 'Dark' : 'Light'}
-            </Button>
-            <Button
-              uppercase
-              mode='contained'
-              onPress={userService.signOut}
-              labelStyle={{ fontFamily: ' -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif' }}
-              buttonColor="hsla(0, 100%, 71%, 1)"
-            >
-              Sign Out
-            </Button>
+            <IconButton icon={theme === 'light' ? 'weather-night' : 'weather-sunny'} style={{ margin: 0 }} accessibilityLabel="toggle dark/light mode" onPress={toggleTheme} />
+            <IconButton icon='logout' style={{ margin: 0 }} onPress={userService.signOut} accessibilityLabel="logout" />
           </View> : null),
           contentStyle: {
             backgroundColor: colors.background,

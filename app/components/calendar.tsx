@@ -12,7 +12,7 @@ function HabitCheck({ date, color, checkInMasks, onPress }: { date: Date, color:
 
   const checkColor = useMemo(() => {
     const checkedColor = color || 'hsl(0, 0%, 60%)';
-    const halfCheckedColor = color ? color.replace(', 1)', ', 0.45)') :'hsla(0, 0%, 60%, 0.45)';
+    const halfCheckedColor = color ? color.replace(', 1)', ', 0.15)') :'hsla(0, 0%, 60%, 0.15)';
     const uncheckedColor = 'hsla(0, 0%, 50%, 0.10)'
 
     switch (checkedType) {
@@ -21,7 +21,7 @@ function HabitCheck({ date, color, checkInMasks, onPress }: { date: Date, color:
       case '2':
         return halfCheckedColor; // Half-checked
       case '0':
-        return uncheckedColor; // Unchecked
+        return halfCheckedColor; // Unchecked
       default:
         return uncheckedColor; // Default to unchecked
     }
