@@ -1,6 +1,7 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, View, FlatList, StyleSheet, Alert, Platform } from 'react-native';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { StatusBar, Text, View, FlatList, StyleSheet, Alert, Platform, Dimensions } from 'react-native';
 import { FAB } from 'react-native-paper';
+import ConfettiCannon from "react-native-confetti-cannon";
 // @ts-ignore
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
@@ -13,6 +14,7 @@ import useUserInfo from '../hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
 import { calculateLast75DaysCount, updateHabitCheckIn } from '@/util';
+import Explosion from 'react-native-confetti-cannon';
 
 export default function Index() {
   const { replace } = useLocalSearchParams();
@@ -20,7 +22,7 @@ export default function Index() {
   const { loading : loadingUser, user } = useUserInfo();
   const [loadingHabits, setLoadingHabits] = useState(true);
   const { colors } = useTheme();
-
+  const confettiRef = useRef<Explosion>();
   const { allHabits, setAllHabits, updateHabit, deleteHabit } = useContext(HabitsContext);
 
   const retrieveHabits = async () => {
@@ -42,6 +44,9 @@ export default function Index() {
     // Optimistically update the habit
     const updatedHabit = updateHabitCheckIn(allHabits[habitId], date, !isChecked);
     updateHabit?.(habitId, updatedHabit);
+    if (confettiRef && confettiRef.current && confettiRef.current.start && !isChecked) {
+      confettiRef.current.start();
+    }
 
     habitService.checkIn(habitId, date, !isChecked).then((returnedHabit) => {
       if (returnedHabit && returnedHabit.checkInMasks[date.getFullYear()] !== updatedHabit.checkInMasks[date.getFullYear()]) {
@@ -127,6 +132,14 @@ export default function Index() {
           style={styles.createButton}
           icon='plus'
           onPress={() => router.navigate('/create')}
+        />
+        <ConfettiCannon
+          ref={confettiRef}
+          count={50}
+          origin={{ x: Dimensions.get("window").width / 2, y: -30 }}
+          autoStart={false}
+          fadeOut={true}
+          fallSpeed={2000}
         />
       </View>
     </View>
