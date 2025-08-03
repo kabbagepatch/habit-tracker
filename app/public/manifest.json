@@ -4,20 +4,20 @@
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0b0f24",
-  "theme_color": "#8ecae6",
+  "theme_color": "#D19A9A",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "favicon.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "calendar.png",
+      "src": "icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "calendar.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }

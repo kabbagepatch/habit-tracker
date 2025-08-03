@@ -25,7 +25,7 @@ function MyStack() {
           },
           headerTintColor: colors.text,
           headerTitle: () => <Text variant='titleLarge' onPress={() => router.dismissTo('/')}>75 Hotter</Text>,
-          headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', marginRight: 10, flexDirection: 'row' }}>
+          headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', flexDirection: 'row' }}>
             <IconButton icon={theme === 'light' ? 'weather-night' : 'weather-sunny'} style={{ margin: 0 }} accessibilityLabel="toggle dark/light mode" onPress={toggleTheme} />
             <IconButton icon='logout' style={{ margin: 0 }} onPress={userService.signOut} accessibilityLabel="logout" />
           </View> : null),
@@ -34,8 +34,8 @@ function MyStack() {
           },
         }}
       >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="create" />
+        <Stack.Screen name="index" options={{ title: 'Home' }} />
+        <Stack.Screen name="create" options={{ title: 'Add' }} />
       </Stack>
     </PaperProvider>
   );

@@ -70,12 +70,14 @@ export default function Index() {
     Alert.alert('Delete Habit', 'Are you sure you want to delete this habit?', [
       {
         text: 'Cancel',
-        onPress: () => console.log('Cancel pressed'),
         style: 'cancel',
       },
       {
         text: 'Delete',
-        onPress: () => console.log('Delete pressed'),
+        onPress: () => {
+          habitService.deleteHabit(habitId);
+          deleteHabit?.(habitId);
+        },
         style: 'destructive',
       },
     ]);

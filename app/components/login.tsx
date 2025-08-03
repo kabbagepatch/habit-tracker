@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Button, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-
-import firebaseApp from "@/firebaseApp";
 import { userService } from '../service';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function Login() {
   const [mode, setMode] = useState('LOGIN')
@@ -13,6 +11,8 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [passwordRepeat, setPasswordRepeat] = useState('')
   const [error, setError] = useState('')
+  
+  const { colors } = useTheme();
 
   const validate = (): boolean => {
     if (error) {
@@ -46,9 +46,6 @@ export default function Login() {
     }
 
     await userService.signIn(email, password);
-
-    // const auth = getAuth(firebaseApp);
-    // await signInWithEmailAndPassword(auth, email, password)
   };
   
   const onPressSignUp = async () => {
@@ -57,10 +54,6 @@ export default function Login() {
     }
 
     await userService.signUp(email, password, name);
-
-    // const auth = getAuth(firebaseApp);
-    // const userCred = await createUserWithEmailAndPassword(auth, email, password)
-    // await updateProfile(userCred.user, { displayName: name })
   };
 
   const getButtonText = (): string => {
@@ -87,12 +80,12 @@ export default function Login() {
   return (
     <View style={styles.page}>
       <View style={styles.container}>
-        <Text style={styles.title}>75 Hotter</Text>
+        <Text style={[styles.title, { color: colors.text }]}>75 Hotter</Text>
 
         <View style={styles.inputView}>
           {mode === 'SIGNUP' && 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
               placeholder='NAME'
               placeholderTextColor="#aaa"
               value={name}
@@ -103,7 +96,7 @@ export default function Login() {
             />
           }
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: colors.text }]}
             placeholder='EMAIL'
             placeholderTextColor="#aaa"
             value={email}
@@ -113,7 +106,7 @@ export default function Login() {
             autoCapitalize='none'
           />
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: colors.text }]}
             placeholder='PASSWORD'
             placeholderTextColor="#aaa"
             secureTextEntry
@@ -125,7 +118,7 @@ export default function Login() {
           />
           {mode === 'SIGNUP' && 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
               placeholder='REPEAT PASSWORD'
               placeholderTextColor="#aaa"
               secureTextEntry
@@ -169,7 +162,6 @@ const styles = StyleSheet.create({
     textTransform : "uppercase",
     paddingVertical : 20,
     paddingHorizontal: 40,
-    color : "#555"
   },
   inputView: {
     gap: 15,
@@ -184,7 +176,6 @@ const styles = StyleSheet.create({
     borderColor: '#aaa',
     borderWidth: 1,
     borderRadius: 7,
-    color: 'white',
   },
   error: {
     color: 'red'
@@ -201,5 +192,6 @@ const styles = StyleSheet.create({
   },
   link: {
     color: 'blue',
+    marginBottom: -4,
   }
 })

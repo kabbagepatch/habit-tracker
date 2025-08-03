@@ -25,7 +25,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const loadSavedTheme = async () => {
     try {
       const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-      console.log('Saved theme:', savedTheme);
       if (savedTheme) {
         setTheme(savedTheme === 'light' ? 'light' : 'dark'); 
       } else {

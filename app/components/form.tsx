@@ -13,7 +13,7 @@ export default function Form({ existingHabit, submitting, onSubmit } : FormProps
   const [name, setName] = useState(existingHabit?.name || '');
   const [description, setDescription] = useState(existingHabit?.description || '');
   const [frequency, setFrequency] = useState(existingHabit?.frequency || 7);
-  const [color, setColor] = useState(existingHabit?.color || 'hsl(0, 100%, 71%)');
+  const [color, setColor] = useState(existingHabit?.color || 'hsla(0, 100%, 71%, 1)');
   const [error, setError] = useState('');
 
   const { colors } = useTheme();
@@ -50,7 +50,7 @@ export default function Form({ existingHabit, submitting, onSubmit } : FormProps
   return (
     <View style={styles.container}>
       <View style={[styles.form, { backgroundColor: colors.card }]}>
-        <Text style={[styles.title, { color: colors.text }]}>Create a new habit</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{existingHabit?.name ? 'Update Habit' : 'Create a New Habit'}</Text>
         <TextInput
           label='Name'
           value={name}
