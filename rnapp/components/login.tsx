@@ -80,7 +80,7 @@ export default function Login() {
   return (
     <View style={styles.page}>
       <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.text }]}>75 Hotter</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Habit Tracker</Text>
 
         <View style={styles.inputView}>
           {mode === 'SIGNUP' && 

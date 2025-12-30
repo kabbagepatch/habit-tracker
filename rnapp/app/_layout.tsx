@@ -24,7 +24,7 @@ function MyStack() {
             borderBottomColor: colors.header,
           },
           headerTintColor: colors.text,
-          headerTitle: () => <Text variant='titleLarge' onPress={() => router.dismissTo('/')}>75 Hotter</Text>,
+          headerTitle: () => <Text variant='titleLarge' onPress={() => router.dismissTo('/')}>Habit Tracker</Text>,
           headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', flexDirection: 'row' }}>
             <IconButton icon={theme === 'light' ? 'weather-night' : 'weather-sunny'} style={{ margin: 0 }} accessibilityLabel="toggle dark/light mode" onPress={toggleTheme} />
             <IconButton icon='logout' style={{ margin: 0 }} onPress={userService.signOut} accessibilityLabel="logout" />
