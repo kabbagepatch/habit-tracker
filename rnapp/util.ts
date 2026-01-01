@@ -11,11 +11,11 @@ export function updateHabitCheckIn(habit : Habit, date : Date, status : boolean)
   const initialMask = updatedHabit.checkInMasks[date.getFullYear()];
   const updatedMask = initialMask.substring(0, day - 1) + (status ? '1' : '0') + initialMask.substring(day);
   updatedHabit.checkInMasks = { ...updatedHabit.checkInMasks, [date.getFullYear()]: updatedMask };
-  updatedHabit.currentStreak = calculateLast75DaysCount(updatedHabit);
+  // updatedHabit.currentStreak = calculateLast75DaysCount(updatedHabit);
 
-  // const streakInfo = calculateStreaks(updatedHabit);
-  // updatedHabit.currentStreak = streakInfo.currentStreak;
-  // updatedHabit.sanitisedCheckInMasks = streakInfo.updatedMasks || updatedHabit.checkInMasks;
+  const streakInfo = calculateStreaks(updatedHabit);
+  updatedHabit.currentStreak = streakInfo.currentStreak;
+  updatedHabit.sanitisedCheckInMasks = streakInfo.updatedMasks || updatedHabit.checkInMasks;
 
   return updatedHabit;
 }

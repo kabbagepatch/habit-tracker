@@ -13,7 +13,7 @@ import { habitService } from '../service';
 import useUserInfo from '../hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
-import { calculateLast75DaysCount, updateHabitCheckIn } from '@/util';
+import { calculateStreaks, updateHabitCheckIn } from '@/util';
 import Explosion from 'react-native-confetti-cannon';
 
 export default function Index() {
@@ -31,10 +31,10 @@ export default function Index() {
     setLoadingHabits(false);
     if (habits) {
       Object.keys(habits).forEach((key) => {
-        habits[key].currentStreak = calculateLast75DaysCount(habits[key]);
-        // const streakInfo = calculateStreaks(habits[key]);
-        // habits[key].currentStreak = streakInfo.currentStreak;
-        // habits[key].sanitisedCheckInMasks = streakInfo.updatedMasks || habits[key].checkInMasks;
+        // habits[key].currentStreak = calculateLast75DaysCount(habits[key]);
+        const streakInfo = calculateStreaks(habits[key]);
+        habits[key].currentStreak = streakInfo.currentStreak;
+        habits[key].sanitisedCheckInMasks = streakInfo.updatedMasks || habits[key].checkInMasks;
       });
       setAllHabits(habits);
     }
