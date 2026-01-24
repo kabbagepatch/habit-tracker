@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
 // @ts-ignore
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import Login from '@/components/login';
 import Loading from '@/components/loading';
@@ -11,14 +11,16 @@ import HabitCalendar from '@/components/calendar';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
 import { calculateStreaks, updateHabitCheckIn } from '@/util';
+import { IconButton } from 'react-native-paper';
 
 export default function ViewHabit() {
   const { loading, user } = useUserInfo();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [loadingHabit, setLoadingHabit] = useState(true);
 
-  const { allHabits, updateHabit } = useContext(HabitsContext);
+  const { allHabits, updateHabit, deleteHabit } = useContext(HabitsContext);
   const { colors } = useTheme();
+  const router = useRouter();
 
   const retrieveHabit = async (id : string) => {
     if (allHabits && allHabits[id]) {
@@ -56,6 +58,34 @@ export default function ViewHabit() {
       }
     });
   }, [habit, id]);
+  
+  const onUpdate = useCallback((habitId : string) => {
+    router.navigate(`/${habitId}/update`);
+  }, []);
+
+  const onDelete = useCallback(async (habitId : string) => {
+    if (Platform.OS === 'web') {
+      if (confirm('Are you sure you want to delete this habit?') === false) return;
+      habitService.deleteHabit(habitId);
+      deleteHabit?.(habitId);
+      return;
+    }
+
+    Alert.alert('Delete Habit', 'Are you sure you want to delete this habit?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        onPress: () => {
+          habitService.deleteHabit(habitId);
+          deleteHabit?.(habitId);
+        },
+        style: 'destructive',
+      },
+    ]);
+  }, []);
 
   if (loading) return <Loading />
   if (!user) return <Login />;
@@ -64,7 +94,13 @@ export default function ViewHabit() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.card }]}>
-      <Text style={[styles.title, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>{habit.name}</Text>
+      <View style={[styles.titleContainer, {backgroundColor: colors.cardHeader}]}>
+        <Text style={[styles.title, { color: habit.color, textShadowColor: colors.textShadow }]}>{habit.name}</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <IconButton icon='pencil' iconColor={habit.color || 'hsl(204, 100%, 50%)'} style={{ margin: 0 }} onPress={() => onUpdate(habit.id)} />
+          <IconButton icon='delete' iconColor='hsl(0, 100%, 50%)' style={{ margin: 0 }} onPress={() => onDelete(habit.id)} />
+        </View>
+      </View>
       <Text style={[styles.info, { color: habit.color }]}>{habit.description}</Text>
       <Text style={[styles.info, { color: colors.text }]}>{habit.frequency} times a week</Text>
       <Text style={[styles.info, { color: colors.text }]}>Current streak: {habit.currentStreak || '0'} days</Text>
@@ -88,6 +124,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  titleContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   title: {
     fontSize: 24,

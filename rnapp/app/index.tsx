@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { StatusBar, Text, View, FlatList, StyleSheet, Alert, Platform, Dimensions } from 'react-native';
+import { StatusBar, Text, View, FlatList, StyleSheet, Dimensions } from 'react-native';
 import { FAB } from 'react-native-paper';
 import ConfettiCannon from "react-native-confetti-cannon";
 // @ts-ignore
@@ -23,7 +23,7 @@ export default function Index() {
   const [loadingHabits, setLoadingHabits] = useState(true);
   const { colors } = useTheme();
   const confettiRef = useRef<Explosion>();
-  const { allHabits, setAllHabits, updateHabit, deleteHabit } = useContext(HabitsContext);
+  const { allHabits, setAllHabits, updateHabit } = useContext(HabitsContext);
 
   const retrieveHabits = async () => {
     setLoadingHabits(true);
@@ -54,34 +54,6 @@ export default function Index() {
       }
     });
   }, [allHabits]);
-
-  const onUpdate = useCallback((habitId : string) => {
-    router.navigate(`/${habitId}/update`);
-  }, []);
-
-  const onDelete = useCallback(async (habitId : string) => {
-    if (Platform.OS === 'web') {
-      if (confirm('Are you sure you want to delete this habit?') === false) return;
-      habitService.deleteHabit(habitId);
-      deleteHabit?.(habitId);
-      return;
-    }
-
-    Alert.alert('Delete Habit', 'Are you sure you want to delete this habit?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Delete',
-        onPress: () => {
-          habitService.deleteHabit(habitId);
-          deleteHabit?.(habitId);
-        },
-        style: 'destructive',
-      },
-    ]);
-  }, []);
 
   useEffect(() => {
     if (user || replace) {
@@ -123,8 +95,6 @@ export default function Index() {
               <HabitCard
                 id={key}
                 item={item}
-                onUpdate={onUpdate}
-                onDelete={onDelete}
                 onCheck={onCheck}
               />
             )

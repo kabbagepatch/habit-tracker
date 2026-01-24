@@ -92,16 +92,17 @@ const styles = StyleSheet.create({
     overflowX: 'hidden',
   },
   habitCheck: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: 20,
-    margin: 5,
+    margin: 3,
+    marginVertical: 5,
     justifyContent: 'center',
     alignItems: 'center',
   },
   date: {
     fontSize: 15,
-    width: 36,
+    width: 32,
     textAlign: 'center',
   },
 });

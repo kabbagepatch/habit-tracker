@@ -54,7 +54,7 @@ export default function Update() {
     } else {
       updateHabit?.(id, { name, description, frequency, color });
     }
-    router.dismissTo('/');
+    router.dismissTo(`/${id}`);
   }
 
   return (
