@@ -3,7 +3,7 @@ import { DimensionValue, StyleSheet, Text, TouchableOpacity, View } from 'react-
 
 import { getDayOfYear } from '@/util';
 
-function HabitCheck({ date, color, checkInMasks, onPress }: { date: Date, color: string, checkInMasks: { [key: number]: string }, onPress: (date: Date) => void }) {  
+function HabitCheck({ date, color, checkInMasks, size=32, onPress }: { date: Date, color: string, size: number, checkInMasks: { [key: number]: string }, onPress: (date: Date) => void }) {  
   const checkedType = useMemo(() => {
     const day = getDayOfYear(date);
     if (!checkInMasks || !checkInMasks[date.getFullYear()]) return '0'; // Unchecked
@@ -12,8 +12,8 @@ function HabitCheck({ date, color, checkInMasks, onPress }: { date: Date, color:
 
   const checkColor = useMemo(() => {
     const checkedColor = color || 'hsl(0, 0%, 60%)';
-    const halfCheckedColor = color ? color.replace(', 1)', ', 0.15)') :'hsla(0, 0%, 60%, 0.15)';
-    const uncheckedColor = 'hsla(0, 0%, 50%, 0.10)'
+    const halfCheckedColor = color ? color.replace(', 1)', ', 0.25)') :'hsla(0, 0%, 60%, 0.15)';
+    const uncheckedColor = color ? color.replace(', 1)', ', 0.05)') :'hsla(0, 0%, 60%, 0.15)';
 
     switch (checkedType) {
       case '1':
@@ -21,7 +21,7 @@ function HabitCheck({ date, color, checkInMasks, onPress }: { date: Date, color:
       case '2':
         return halfCheckedColor; // Half-checked
       case '0':
-        return halfCheckedColor; // Unchecked
+        return uncheckedColor; // Unchecked
       default:
         return uncheckedColor; // Default to unchecked
     }
@@ -30,11 +30,17 @@ function HabitCheck({ date, color, checkInMasks, onPress }: { date: Date, color:
   return (
     <TouchableOpacity
       onPress={() => onPress(date)}
-      style={[styles.habitCheck, { backgroundColor: checkColor }]}
+      style={[styles.habitCheck, { backgroundColor: checkColor, width: size, height: size }]}
     >
-      <Text style={styles.date}>{date.getDate()}</Text>
+      {(date.getDate() !== 1) && 
+        <Text style={[styles.date, { fontSize: (size - 4) / 2 }]}>
+          {date.getDate()}
+        </Text>
+      }
       {(date.getDate() === 1) &&
-        <Text style={{ color: checkedType === '0' ? color : 'black', fontSize: 10 }}>{date.toLocaleString('default', { month: 'short' })}</Text>
+        <Text style={{ color: checkedType === '0' ? color : 'black', fontSize: (size - 10) / 2 }}>
+          {date.toLocaleString('default', { month: 'short' })}
+        </Text>
       }
     </TouchableOpacity>
   );
@@ -70,6 +76,7 @@ export default function HabitCalendar({ habit, nChecks, onCheck, height, padding
                 key={i}
                 date={date}
                 color={color}
+                size={nChecks > 50 ? 24 : 36}
                 checkInMasks={checkInMasksToUse}
                 onPress={onPress}
               />

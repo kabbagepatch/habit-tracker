@@ -27,7 +27,7 @@ export default function HabitCard({ id, item, onCheck }: Props) {
             {item.currentStreak || '0'}
           </Text>
         </View>
-        <HabitCalendar habit={item} nChecks={15} onCheck={(date, isChecked) => onCheck(id, date, isChecked)} height={50} />
+        <HabitCalendar habit={item} nChecks={30} onCheck={(date, isChecked) => onCheck(id, date, isChecked)} height={50} />
       </View>
     </View>
   )

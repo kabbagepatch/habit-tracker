@@ -86,7 +86,7 @@ export default function Index() {
       <StatusBar />
       <View style={styles.habitsContainer}>
         <FlatList
-          style={{ paddingBottom: 70 }}
+          style={{ paddingBottom: 70, scrollbarWidth: 'none' }}
           data={Object.keys(allHabits).sort((a, b) => new Date(allHabits[a].createdAt).getTime() - new Date(allHabits[b].createdAt).getTime())}
           keyExtractor={(item : any) => item.toString()}
           renderItem={({ item: key }) => {
