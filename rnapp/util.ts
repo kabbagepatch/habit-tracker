@@ -37,6 +37,82 @@ export function calculateLast75DaysCount(habit: Habit): number {
   return count;
 }
 
+export function calculateBestStreak(habit: Habit): number {
+  const masks = habit.sanitisedCheckInMasks || habit.checkInMasks;
+  const years = Object.keys(masks).map(k => parseInt(k, 10)).sort((a, b) => a - b);
+  let best = 0;
+  let current = 0;
+  for (const year of years) {
+    const mask = masks[year];
+    for (let i = 0; i < mask.length; i++) {
+      if (mask[i] === '1' || mask[i] === '2') {
+        current++;
+        if (current > best) best = current;
+      } else {
+        current = 0;
+      }
+    }
+    // Don't reset between years — streaks can span year boundaries
+  }
+  return best;
+}
+
+export function calculateTotalCheckIns(habit: Habit): number {
+  return Object.values(habit.checkInMasks).reduce((total, mask) => {
+    for (const char of mask) {
+      if (char === '1') total++;
+    }
+    return total;
+  }, 0);
+}
+
+export function getWeeklyCheckIns(habit: Habit, numWeeks: number): number[] {
+  const result: number[] = [];
+  const today = new Date();
+  for (let w = numWeeks - 1; w >= 0; w--) {
+    let count = 0;
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - (w * 7 + d));
+      const year = date.getFullYear();
+      const day = getDayOfYear(date);
+      const mask = habit.checkInMasks[year];
+      if (mask && mask[day - 1] === '1') count++;
+    }
+    result.push(count);
+  }
+  return result;
+}
+
+export function getHeatmapData(habit: Habit, numWeeks: number): { date: Date, status: string }[][] {
+  const masks = habit.sanitisedCheckInMasks || habit.checkInMasks;
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun, 6=Sat
+
+  // Start from the Sunday of the oldest week
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - dayOfWeek - (numWeeks - 1) * 7);
+
+  const columns: { date: Date, status: string }[][] = [];
+  for (let w = 0; w < numWeeks; w++) {
+    const column: { date: Date, status: string }[] = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + w * 7 + d);
+      if (date > today) {
+        column.push({ date, status: 'future' });
+      } else {
+        const year = date.getFullYear();
+        const day = getDayOfYear(date);
+        const mask = masks[year];
+        column.push({ date, status: mask ? (mask[day - 1] || '0') : '0' });
+      }
+    }
+    columns.push(column);
+  }
+  return columns;
+}
+
 export function calculateStreaks(habit : Habit): { currentStreak: number, updatedMasks?: { [key: number]: string } } {
   const { checkInMasks, frequency } = habit;
   const curDate = new Date();
