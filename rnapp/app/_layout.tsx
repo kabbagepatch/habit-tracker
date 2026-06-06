@@ -9,6 +9,7 @@ import useUserInfo from "../hooks/useUserInfo";
 import { HabitsProvider } from "@/hooks/HabitContext";
 import { ThemeProvider } from '@/hooks/ThemeContext';
 import { useTheme } from "@/hooks/useTheme";
+import { NotificationProvider } from "@/hooks/NotificationContext";
 
 function MyStack() {
   const { user } = useUserInfo();
@@ -17,6 +18,7 @@ function MyStack() {
 
   return (
     <PaperProvider theme={theme === 'light' ? MD3LightTheme : MD3DarkTheme}>
+      <NotificationProvider>
       <Stack
         screenOptions={{
           headerStyle: {
@@ -37,6 +39,7 @@ function MyStack() {
         <Stack.Screen name="index" options={{ title: 'Home' }} />
         <Stack.Screen name="create" options={{ title: 'Add' }} />
       </Stack>
+      </NotificationProvider>
     </PaperProvider>
   );
 }

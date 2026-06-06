@@ -10,10 +10,11 @@ function HabitCheck({ date, color, checkInMasks, size=32, onPress }: { date: Dat
     return checkInMasks[date.getFullYear()][day - 1] || '0'; // Default to unchecked
   }, [checkInMasks[date.getFullYear()]]);
 
+  const textColor = checkedType === '0' ? 'hsla(0, 0%, 60%, 0.5)' : 'black';
   const checkColor = useMemo(() => {
     const checkedColor = color || 'hsl(0, 0%, 60%)';
-    const halfCheckedColor = color ? color.replace(', 1)', ', 0.25)') :'hsla(0, 0%, 60%, 0.15)';
-    const uncheckedColor = color ? color.replace(', 1)', ', 0.05)') :'hsla(0, 0%, 60%, 0.15)';
+    const halfCheckedColor = color ? color.replace(', 1)', ', 0.4)') :'hsla(0, 0%, 60%, 0.15)';
+    const uncheckedColor = color ? color.replace(', 1)', ', 0.1)') :'hsla(0, 0%, 60%, 0.15)';
 
     switch (checkedType) {
       case '1':
@@ -22,8 +23,6 @@ function HabitCheck({ date, color, checkInMasks, size=32, onPress }: { date: Dat
         return halfCheckedColor; // Half-checked
       case '0':
         return uncheckedColor; // Unchecked
-      default:
-        return uncheckedColor; // Default to unchecked
     }
   }, [color, checkedType]);
 
@@ -33,7 +32,7 @@ function HabitCheck({ date, color, checkInMasks, size=32, onPress }: { date: Dat
       style={[styles.habitCheck, { backgroundColor: checkColor, width: size, height: size }]}
     >
       {(date.getDate() !== 1) && 
-        <Text style={[styles.date, { fontSize: (size - 4) / 2 }]}>
+        <Text style={[styles.date, { fontSize: (size - 4) / 2, color: textColor }]}>
           {date.getDate()}
         </Text>
       }
@@ -59,14 +58,15 @@ export default function HabitCalendar({ habit, nChecks, onCheck, height, padding
     setTimeout(() => {
       debouncingRef.current = false;
     }, 300);
-    if (onCheck) {
-      onCheck(date, checkInMasksToUse[date.getFullYear()][day - 1] === "1");
+    const mask = checkInMasksToUse[date.getFullYear()];
+    if (onCheck && mask) {
+      onCheck(date, mask[day - 1] === "1");
     }
   }
 
   return (
-    <View style={{ height: height || 400, backgroundColor: 'transparent', overflow: 'hidden' }}>
-      <View style={[styles.habitChecks, { height: height || 400, backgroundColor: 'transparent', paddingHorizontal: paddingHorizontal || 0, overflowY: overflowY || 'hidden' }]}>
+    <View style={{ height: height || 300, backgroundColor: 'transparent', overflow: 'hidden' }}>
+      <View style={[styles.habitChecks, { height: height || 300, backgroundColor: 'transparent', paddingHorizontal: paddingHorizontal || 0, overflowY: overflowY || 'hidden' }]}>
         {
           Array.from({ length: nChecks }, (_, i) => {
             const date = new Date();

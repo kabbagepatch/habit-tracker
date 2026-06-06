@@ -10,6 +10,7 @@ import useUserInfo from '@/hooks/useUserInfo';
 import HabitCalendar from '@/components/calendar';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
+import { useNotification } from '@/hooks/NotificationContext';
 import { calculateStreaks, updateHabitCheckIn } from '@/util';
 import { IconButton } from 'react-native-paper';
 
@@ -20,6 +21,7 @@ export default function ViewHabit() {
 
   const { allHabits, updateHabit, deleteHabit } = useContext(HabitsContext);
   const { colors } = useTheme();
+  const { showNotification } = useNotification();
   const router = useRouter();
 
   const retrieveHabit = async (id : string) => {
@@ -58,16 +60,25 @@ export default function ViewHabit() {
       }
     });
   }, [habit, id]);
-  
+
   const onUpdate = useCallback((habitId : string) => {
     router.navigate(`/${habitId}/update`);
   }, []);
 
-  const onDelete = useCallback(async (habitId : string) => {
+  const doDelete = async (habitId: string) => {
+    const success = await habitService.deleteHabit(habitId);
+    if (!success) {
+      showNotification('Failed to delete habit. Please try again.', 'error');
+      return;
+    }
+    deleteHabit?.(habitId);
+    router.navigate('/');
+  };
+
+  const onDelete = useCallback((habitId : string) => {
     if (Platform.OS === 'web') {
       if (confirm('Are you sure you want to delete this habit?') === false) return;
-      habitService.deleteHabit(habitId);
-      deleteHabit?.(habitId);
+      doDelete(habitId);
       return;
     }
 
@@ -78,14 +89,11 @@ export default function ViewHabit() {
       },
       {
         text: 'Delete',
-        onPress: () => {
-          habitService.deleteHabit(habitId);
-          deleteHabit?.(habitId);
-        },
+        onPress: () => doDelete(habitId),
         style: 'destructive',
       },
     ]);
-  }, []);
+  }, [habit]);
 
   if (loading) return <Loading />
   if (!user) return <Login />;
@@ -116,7 +124,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     minWidth: 300,
-    maxHeight: 650,
+    maxHeight: 520,
     borderRadius: 10,
     margin: '1%',
     shadowColor: 'hsl(0, 0%, 0%)',
@@ -142,7 +150,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
   },
   section: {
-    marginTop: 15,
+    marginTop: 5,
   },
   subtitle: {
     fontSize: 20,

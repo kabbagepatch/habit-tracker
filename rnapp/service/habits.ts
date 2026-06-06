@@ -55,15 +55,16 @@ export const updateHabit = async (habitId : string, habitData : HabitData) : Pro
   }
 }
 
-export const deleteHabit = async (habitId : string) : Promise<Habit | undefined> => {
+export const deleteHabit = async (habitId : string) : Promise<boolean> => {
   try {
-    const res = await axios.delete(
+    await axios.delete(
       `${baseUrl}/habits/${habitId}`,
       { headers: { Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` } }
     );
-    return res.data.habit;
+    return true;
   } catch (e : any) {
     console.log(e.status);
+    return false;
   }
 }
 

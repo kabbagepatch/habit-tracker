@@ -9,14 +9,14 @@ import Loading from '@/components/loading';
 import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
 import { HabitsContext } from '@/hooks/HabitContext';
+import { useNotification } from '@/hooks/NotificationContext';
 
 export default function Create() {
   const router = useRouter();
   const { loading, user } = useUserInfo();
-
   const [submitting, setSubmitting] = useState(false);
-
   const { setHabit } = useContext(HabitsContext);
+  const { showNotification } = useNotification();
 
   if (loading) return <Loading />;
   if (!user) return <Login />;
@@ -24,8 +24,12 @@ export default function Create() {
   const onSubmit = async (name: string, description: string, frequency: number, color: string) => {
     setSubmitting(true);
     const newHabit = await habitService.createHabit({name, description, frequency, color});
-    if (newHabit) setHabit?.(newHabit);
     setSubmitting(false);
+    if (!newHabit) {
+      showNotification('Failed to create habit. Please try again.', 'error');
+      return;
+    }
+    setHabit?.(newHabit);
     router.dismissTo('/');
   }
 

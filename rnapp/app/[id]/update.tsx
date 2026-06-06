@@ -9,6 +9,7 @@ import { habitService } from '@/service';
 import useUserInfo from '@/hooks/useUserInfo';
 
 import { HabitsContext } from '@/hooks/HabitContext';
+import { useNotification } from '@/hooks/NotificationContext';
 import { calculateStreaks } from '@/util';
 
 export default function Update() {
@@ -16,10 +17,12 @@ export default function Update() {
   const { loading, user } = useUserInfo();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [loadingHabit, setLoadingHabit] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [habit, setHabit] = useState<Habit | undefined>(undefined);
 
   const { allHabits, updateHabit } = useContext(HabitsContext);
-  
+  const { showNotification } = useNotification();
+
   const retrieveHabit = async (id : string) => {
     if (allHabits && allHabits[id]) {
       setHabit(allHabits[id]);
@@ -45,9 +48,15 @@ export default function Update() {
   if (loadingHabit) return <Loading />
 
   const onSubmit = async (name: string, description: string, frequency: number, color: string) => {
-    habitService.updateHabit(id, { name, description, frequency, color });
+    setSubmitting(true);
+    const updatedHabit = await habitService.updateHabit(id, { name, description, frequency, color });
+    setSubmitting(false);
+    if (!updatedHabit) {
+      showNotification('Failed to update habit. Please try again.', 'error');
+      return;
+    }
     if (habit && habit.frequency !== frequency) {
-      const streakInfo = calculateStreaks({ ...habit , frequency });
+      const streakInfo = calculateStreaks({ ...habit, frequency });
       const currentStreak = streakInfo.currentStreak;
       const sanitisedCheckInMasks = streakInfo.updatedMasks || habit.checkInMasks;
       updateHabit?.(id, { name, description, frequency, color, currentStreak, sanitisedCheckInMasks });
@@ -58,6 +67,6 @@ export default function Update() {
   }
 
   return (
-    <HabitForm existingHabit={habit} onSubmit={onSubmit} />
+    <HabitForm existingHabit={habit} submitting={submitting} onSubmit={onSubmit} />
   )
 };

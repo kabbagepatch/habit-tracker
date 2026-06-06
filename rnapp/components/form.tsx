@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     alignItems: 'center',
+    marginTop: 10,
   },
   form: {
     width: '90%',
