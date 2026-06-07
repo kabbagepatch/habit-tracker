@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Habit Tracker",
-    "slug": "habit-tracker",
+    "name": "Habits Garden",
+    "slug": "habits-garden",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "habit-tracker",
+    "scheme": "habits-garden",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kabbagepatch.habittracker"
+      "bundleIdentifier": "com.kabbagepatch.habitsgarden"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.kabbagepatch.habittracker"
+      "package": "com.kabbagepatch.habitsgarden"
     },
     "web": {
       "bundler": "metro",
