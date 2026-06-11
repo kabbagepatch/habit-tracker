@@ -29,7 +29,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         <Snackbar
           visible={visible}
           onDismiss={() => setVisible(false)}
-          duration={3000}
+          duration={2000}
+          elevation={3}
           style={{ backgroundColor: type === 'error' ? 'hsl(0, 70%, 45%)' : 'hsl(142, 50%, 40%)' }}
         >
           {message}

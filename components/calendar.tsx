@@ -3,7 +3,15 @@ import { DimensionValue, StyleSheet, Text, TouchableOpacity, View } from 'react-
 
 import { getDayOfYear } from '@/util';
 
-function HabitCheck({ date, color, checkInMasks, size=32, onPress }: { date: Date, color: string, size: number, checkInMasks: { [key: number]: string }, onPress: (date: Date) => void }) {  
+interface CheckProps {
+  date: Date;
+  color: string;
+  size: number;
+  checkInMasks: { [key: number]: string };
+  onPress: (date: Date) => void;
+};
+
+function HabitCheck({ date, color, checkInMasks, size=32, onPress }: CheckProps) {  
   const checkedType = useMemo(() => {
     const day = getDayOfYear(date);
     if (!checkInMasks || !checkInMasks[date.getFullYear()]) return '0'; // Unchecked
@@ -45,7 +53,16 @@ function HabitCheck({ date, color, checkInMasks, size=32, onPress }: { date: Dat
   );
 }
 
-export default function HabitCalendar({ habit, nChecks, onCheck, height, paddingHorizontal, overflowY } : { habit: Habit, nChecks: number, onCheck: (date: Date, isChecked: boolean) => void, height?: DimensionValue, paddingHorizontal?: DimensionValue, overflowY?: string }) {
+interface CalendarProps {
+  habit: Habit;
+  nChecks: number;
+  onCheck: (date: Date, isChecked: boolean) => void;
+  height?: DimensionValue;
+  overflowY?: string;
+  size?: 24 | 36;
+};
+
+export default function HabitCalendar({ habit, nChecks, onCheck, height, overflowY, size=36 } : CalendarProps) {
   const { color, checkInMasks, sanitisedCheckInMasks } = habit;
   const checkInMasksToUse = sanitisedCheckInMasks || checkInMasks;
 
@@ -66,7 +83,7 @@ export default function HabitCalendar({ habit, nChecks, onCheck, height, padding
 
   return (
     <View style={{ height: height || 300, backgroundColor: 'transparent', overflow: 'hidden' }}>
-      <View style={[styles.habitChecks, { height: height || 300, backgroundColor: 'transparent', paddingHorizontal: paddingHorizontal || 0, overflowY: overflowY || 'hidden' }]}>
+      <View style={[styles.habitChecks, { height: height || 300, backgroundColor: 'transparent', overflowY: overflowY || 'hidden' }]}>
         {
           Array.from({ length: nChecks }, (_, i) => {
             const date = new Date();
@@ -76,7 +93,7 @@ export default function HabitCalendar({ habit, nChecks, onCheck, height, padding
                 key={i}
                 date={date}
                 color={color}
-                size={nChecks > 50 ? 24 : 36}
+                size={size}
                 checkInMasks={checkInMasksToUse}
                 onPress={onPress}
               />

@@ -1,20 +1,21 @@
-import { Text, View, StyleSheet, Platform } from 'react-native';
-import { IconButton } from 'react-native-paper';
-// @ts-ignore
+import { Text, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import HabitCalendar from './calendar';
 import { useTheme } from '@/hooks/useTheme';
+import WeeklyChart from './chart';
 
 interface Props {
   id: string;
   item: Habit;
+  mode?: 'calendar' | 'garden';
   onCheck: (habitId: string, date: Date, isChecked: boolean) => void;
 }
 
-export default function HabitCard({ id, item, onCheck }: Props) {
+export default function HabitCard({ id, item, mode='calendar', onCheck }: Props) {
   const router = useRouter();  
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
 
   return (
     <View style={[styles.habitContainer, { backgroundColor: colors.card }]}>
@@ -23,11 +24,19 @@ export default function HabitCard({ id, item, onCheck }: Props) {
           <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
             {item.name}
           </Text>
-          <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
+          {mode === 'calendar' && <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
             {item.currentStreak || '0'}
-          </Text>
+          </Text>}
         </View>
-        <HabitCalendar habit={item} nChecks={30} onCheck={(date, isChecked) => onCheck(id, date, isChecked)} height={50} />
+        {mode === 'calendar' && 
+          <HabitCalendar
+            habit={item}
+            nChecks={Math.floor(width / 20)}
+            height={50}
+            onCheck={(date, isChecked) => onCheck(id, date, isChecked)}
+          />
+        }
+        {mode === 'garden' && <WeeklyChart habit={item} />}
       </View>
     </View>
   )

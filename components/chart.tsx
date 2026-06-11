@@ -1,11 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { getWeeklyCheckIns } from '@/util';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 const MAX_BAR_HEIGHT = 92;
 const GRID_LEVELS = [0, 0.33, 0.67, 1];
 
-export default function WeeklyChart({ habit, weeklyData }: { habit: Habit; weeklyData: number[] }) {
+export default function WeeklyChart({ habit }: { habit: Habit }) {
   const color = habit.color;
   const frequency = habit.frequency;
+  const { width } = useWindowDimensions();
+  const weeklyData = getWeeklyCheckIns(habit, Math.max(Math.floor(width / 35), 12));
 
   return (
     <View style={styles.wrapper}>
@@ -15,7 +18,7 @@ export default function WeeklyChart({ habit, weeklyData }: { habit: Habit; weekl
           return (
             <View
               key={level}
-              style={[styles.gridLine, { bottom: MAX_BAR_HEIGHT * level }, styles.gridLineRegular]}
+              style={[styles.gridLine, { bottom: MAX_BAR_HEIGHT * level + 15 }, styles.gridLineRegular]}
             />
           );
         })}
@@ -24,6 +27,9 @@ export default function WeeklyChart({ habit, weeklyData }: { habit: Habit; weekl
             ? Math.min(MAX_BAR_HEIGHT, Math.round((count / frequency) * MAX_BAR_HEIGHT))
             : 0;
           const barColor = count >= frequency ? color : color.replace(', 1)', ', 0.45)');
+          const d = new Date();
+          d.setDate(d.getDate() - (d.getDay() % 7));
+          d.setDate(d.getDate() - (weeklyData.length - i - 1) * 7);
           return (
             <View key={i} style={styles.barSlot}>
               {barHeight > 0 && (
@@ -32,6 +38,7 @@ export default function WeeklyChart({ habit, weeklyData }: { habit: Habit; weekl
                   <View style={[styles.bar, { height: barHeight, backgroundColor: barColor }]} />
                 </View>
               )}
+              <Text style={[styles.weekText, { color }]}>{`${d.getMonth() + 1}/${d.getDate()}`}</Text>
             </View>
           );
         })}
@@ -42,8 +49,7 @@ export default function WeeklyChart({ habit, weeklyData }: { habit: Habit; weekl
 
 const styles = StyleSheet.create({
   wrapper: {
-    height: MAX_BAR_HEIGHT + 8,
-    paddingHorizontal: 15,
+    height: MAX_BAR_HEIGHT + 24,
     marginTop: 12,
     marginBottom: 4,
     justifyContent: 'flex-end',
@@ -76,5 +82,17 @@ const styles = StyleSheet.create({
   },
   gridLineRegular: {
     backgroundColor: 'hsla(0, 0%, 50%, 0.2)',
+  },
+  weeks: {
+    marginRight: -5,
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  weekText: {
+    marginTop: 2,
+    textAlign: 'center',
+    fontSize: 10,
   },
 });

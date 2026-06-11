@@ -21,7 +21,7 @@ export default function Index() {
   const router = useRouter();
   const { loading : loadingUser, user } = useUserInfo();
   const [loadingHabits, setLoadingHabits] = useState(true);
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const confettiRef = useRef<Explosion>();
   const { allHabits, setAllHabits, updateHabit } = useContext(HabitsContext);
 
@@ -86,18 +86,20 @@ export default function Index() {
       <StatusBar />
       <View style={styles.habitsContainer}>
         <FlatList
+          // @ts-ignore-line
           style={{ paddingBottom: 70, scrollbarWidth: 'none' }}
           data={Object.keys(allHabits).sort((a, b) => new Date(allHabits[a].createdAt).getTime() - new Date(allHabits[b].createdAt).getTime())}
           keyExtractor={(item : any) => item.toString()}
           renderItem={({ item: key }) => {
             const item = allHabits[key];
-            return (
+            return (<View>
               <HabitCard
                 id={key}
                 item={item}
+                mode={mode}
                 onCheck={onCheck}
               />
-            )
+            </View>)
           }}
         />
         <FAB
@@ -106,6 +108,7 @@ export default function Index() {
           onPress={() => router.navigate('/create')}
         />
         <ConfettiCannon
+          // @ts-ignore-line
           ref={confettiRef}
           count={50}
           origin={{ x: Dimensions.get("window").width / 2, y: -30 }}

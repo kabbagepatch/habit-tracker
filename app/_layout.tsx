@@ -14,7 +14,7 @@ import { NotificationProvider } from "@/hooks/NotificationContext";
 function MyStack() {
   const { user } = useUserInfo();
   const router = useRouter();
-  const { theme, colors, toggleTheme } = useTheme();
+  const { theme, colors, toggleTheme, mode, toggleMode } = useTheme();
 
   return (
     <PaperProvider theme={theme === 'light' ? MD3LightTheme : MD3DarkTheme}>
@@ -23,13 +23,30 @@ function MyStack() {
         screenOptions={{
           headerStyle: {
             backgroundColor: colors.header,
+            // @ts-ignore-line
             borderBottomColor: colors.header,
           },
           headerTintColor: colors.text,
           headerTitle: () => <Text variant='titleLarge' onPress={() => router.dismissTo('/')}>Habits Garden</Text>,
           headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', flexDirection: 'row' }}>
-            <IconButton icon={theme === 'light' ? 'weather-night' : 'weather-sunny'} style={{ margin: 0 }} accessibilityLabel="toggle dark/light mode" onPress={toggleTheme} />
-            <IconButton icon='logout' style={{ margin: 0 }} onPress={userService.signOut} accessibilityLabel="logout" />
+            <IconButton
+              icon={mode === 'calendar' ? 'calendar-check' : 'sprout'}
+              style={{ margin: 0 }}
+              accessibilityLabel="toggle calendar/garden mode"
+              onPress={toggleMode}
+            />
+            <IconButton
+              icon={theme === 'light' ? 'weather-night' : 'weather-sunny'}
+              style={{ margin: 0 }}
+              accessibilityLabel="toggle dark/light mode"
+              onPress={toggleTheme}
+            />
+            <IconButton
+              icon='logout'
+              style={{ margin: 0 }}
+              onPress={userService.signOut}
+              accessibilityLabel="logout"
+            />
           </View> : null),
           contentStyle: {
             backgroundColor: colors.background,

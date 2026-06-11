@@ -11,7 +11,7 @@ import HabitCalendar from '@/components/calendar';
 import { HabitsContext } from '@/hooks/HabitContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useNotification } from '@/hooks/NotificationContext';
-import { calculateStreaks, getWeeklyCheckIns, updateHabitCheckIn } from '@/util';
+import { calculateStreaks, updateHabitCheckIn } from '@/util';
 import { IconButton } from 'react-native-paper';
 import StatsRow from '@/components/stats';
 import WeeklyChart from '@/components/chart';
@@ -74,6 +74,7 @@ export default function ViewHabit() {
       return;
     }
     deleteHabit?.(habitId);
+    showNotification('Habit succesfully deleted.');
     router.navigate('/');
   };
 
@@ -101,10 +102,10 @@ export default function ViewHabit() {
   if (!user) return <Login />;
   if (loadingHabit) return <Loading />
   if (!habit) return <Text>Habit not found</Text>
-  const weeklyData = getWeeklyCheckIns(habit, 12);
 
+  const textStyle = { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow };
   return (
-    <View style={[styles.container, { backgroundColor: colors.card, maxHeight: habit.description ? 700 : 670 }]}>
+    <View style={[styles.container, { backgroundColor: colors.card, maxHeight: habit.description ? 720 : 680 }]}>
       <View style={[styles.titleContainer, {backgroundColor: colors.cardHeader}]}>
         <Text style={[styles.title, { color: habit.color, textShadowColor: colors.textShadow }]}>{habit.name}</Text>
         <View style={{ flexDirection: 'row' }}>
@@ -115,12 +116,20 @@ export default function ViewHabit() {
       {habit.description && <Text style={[styles.info, { color: habit.color }]}>{habit.description}</Text>}
       <StatsRow habit={habit} />
       <View style={styles.section}>
-        <Text style={[styles.title, styles.subtitle, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>Weekly History</Text>
-        <WeeklyChart habit={habit} weeklyData={weeklyData} />
+        <Text style={[styles.title, styles.subtitle, textStyle]}>Weekly History</Text>
+        <View style={styles.sectionContent}><WeeklyChart habit={habit} /></View>
       </View>
       <View style={styles.section}>
-        <Text style={[styles.title, styles.subtitle, { color: habit.color, backgroundColor: colors.cardHeader, textShadowColor: colors.textShadow }]}>Calendar</Text>
-        <HabitCalendar habit={habit} nChecks={habit.currentStreak ? Math.max(habit.currentStreak, 1000) : 1000} onCheck={onCheck} paddingHorizontal={15} overflowY="scroll" />
+        <Text style={[styles.title, styles.subtitle, textStyle]}>Calendar</Text>
+        <View style={styles.sectionContent}>
+          <HabitCalendar
+            habit={habit}
+            nChecks={habit.currentStreak ? Math.max(habit.currentStreak, 1000) : 1000}
+            onCheck={onCheck}
+            overflowY="scroll"
+            size={24}
+          />
+        </View>
       </View>
     </View>
   )
@@ -157,6 +166,9 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: 5,
+  },
+  sectionContent: {
+    paddingHorizontal: 10,
   },
   subtitle: {
     fontSize: 20,

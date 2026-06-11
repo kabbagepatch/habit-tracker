@@ -30,6 +30,7 @@ export default function Create() {
       return;
     }
     setHabit?.(newHabit);
+    showNotification('Habit succesfully created.');
     router.dismissTo('/');
   }
 
