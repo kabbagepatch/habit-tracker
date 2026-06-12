@@ -30,7 +30,7 @@ function MyStack() {
           headerTitle: () => <Text variant='titleLarge' onPress={() => router.dismissTo('/')}>Habits Garden</Text>,
           headerRight: () => (user ? <View style={{ justifyContent: 'flex-end', flexDirection: 'row' }}>
             <IconButton
-              icon={mode === 'calendar' ? 'calendar-check' : 'sprout'}
+              icon={mode === 'calendar' ? 'sprout' : 'calendar-check'}
               style={{ margin: 0 }}
               accessibilityLabel="toggle calendar/garden mode"
               onPress={toggleMode}

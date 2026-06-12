@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { useTheme } from '@/hooks/useTheme';
+import { habitColors } from '@/hooks/theme';
 
 type FormProps = {
   existingHabit?: Habit;
@@ -17,15 +18,6 @@ export default function Form({ existingHabit, submitting, onSubmit } : FormProps
   const [error, setError] = useState('');
 
   const { colors } = useTheme();
-
-  const habitColors = [
-    'hsla(0, 100%, 71%, 1)', // coral
-    'hsla(176, 56%, 55%, 1)', // turquoise
-    'hsla(191, 60%, 55%, 1)', // sky blue
-    'hsla(152, 36%, 70%, 1)', // sage
-    'hsla(48, 100%, 84%, 1)', // cream
-    'hsla(0, 35%, 74%, 1)', // dusty rose
-  ];
 
   const setNumericFrequency = (f : string) => {
     if (!f) setFrequency(0);

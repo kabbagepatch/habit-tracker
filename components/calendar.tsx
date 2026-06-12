@@ -44,9 +44,14 @@ function HabitCheck({ date, color, checkInMasks, size=32, onPress }: CheckProps)
           {date.getDate()}
         </Text>
       }
-      {(date.getDate() === 1) &&
+      {(date.getDate() === 1) && (date.getMonth() !== 0) &&
         <Text style={{ color: checkedType === '0' ? color : 'black', fontSize: (size - 10) / 2 }}>
           {date.toLocaleString('default', { month: 'short' })}
+        </Text>
+      }
+      {(date.getDate() === 1) && (date.getMonth() === 0) &&
+        <Text style={{ color: checkedType === '0' ? color : 'black', fontSize: (size - 10) / 2 }}>
+          {date.toLocaleString('default', { year: 'numeric' })}
         </Text>
       }
     </TouchableOpacity>
@@ -59,7 +64,7 @@ interface CalendarProps {
   onCheck: (date: Date, isChecked: boolean) => void;
   height?: DimensionValue;
   overflowY?: string;
-  size?: 24 | 36;
+  size?: number;
 };
 
 export default function HabitCalendar({ habit, nChecks, onCheck, height, overflowY, size=36 } : CalendarProps) {

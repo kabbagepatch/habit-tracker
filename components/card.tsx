@@ -24,18 +24,16 @@ export default function HabitCard({ id, item, mode='calendar', onCheck }: Props)
           <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
             {item.name}
           </Text>
-          {mode === 'calendar' && <Text style={[styles.habitName, { color: (item.color || 'hsl(0, 0%, 60%)') }]} onPress={() => router.navigate(`/${item.id}`)}>
-            {item.currentStreak || '0'}
-          </Text>}
+          <Text style={{ color: (item.color || 'hsl(0, 0%, 60%)') }} onPress={() => router.navigate(`/${item.id}`)}>
+            {item.frequency} x
+          </Text>
         </View>
-        {mode === 'calendar' && 
-          <HabitCalendar
-            habit={item}
-            nChecks={Math.floor(width / 20)}
-            height={50}
-            onCheck={(date, isChecked) => onCheck(id, date, isChecked)}
-          />
-        }
+        <HabitCalendar
+          habit={item}
+          nChecks={Math.floor(width / 20)}
+          height={50}
+          onCheck={(date, isChecked) => onCheck(id, date, isChecked)}
+        />
         {mode === 'garden' && <WeeklyChart habit={item} />}
       </View>
     </View>

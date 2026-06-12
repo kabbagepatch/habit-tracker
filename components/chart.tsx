@@ -1,5 +1,7 @@
+import { StyleSheet, Text, useWindowDimensions, View, Image } from 'react-native';
+import Plant from '@/components/plant';
 import { getWeeklyCheckIns } from '@/util';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useTheme } from '@/hooks/useTheme';
 
 const MAX_BAR_HEIGHT = 92;
 const GRID_LEVELS = [0, 0.33, 0.67, 1];
@@ -9,11 +11,11 @@ export default function WeeklyChart({ habit }: { habit: Habit }) {
   const frequency = habit.frequency;
   const { width } = useWindowDimensions();
   const weeklyData = getWeeklyCheckIns(habit, Math.max(Math.floor(width / 35), 12));
+  const { mode } = useTheme();
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.chart}>
-        {/* Grid lines rendered first so they sit behind bars */}
         {GRID_LEVELS.map((level) => {
           return (
             <View
@@ -26,16 +28,21 @@ export default function WeeklyChart({ habit }: { habit: Habit }) {
           const barHeight = frequency > 0
             ? Math.min(MAX_BAR_HEIGHT, Math.round((count / frequency) * MAX_BAR_HEIGHT))
             : 0;
+          const plantLevel = frequency > 0
+            ? Math.min(7, Math.round((count / frequency) * 7))
+            : 0;
           const barColor = count >= frequency ? color : color.replace(', 1)', ', 0.45)');
           const d = new Date();
           d.setDate(d.getDate() - (d.getDay() % 7));
-          d.setDate(d.getDate() - (weeklyData.length - i - 1) * 7);
+          d.setDate(d.getDate() - i * 7);
           return (
             <View key={i} style={styles.barSlot}>
               {barHeight > 0 && (
                 <View>
-                  <Text style={[styles.count, { color }]}>{count}</Text>
-                  <View style={[styles.bar, { height: barHeight, backgroundColor: barColor }]} />
+                  {mode === 'calendar' && <Text style={[styles.count, { color }]}>{count}</Text>}
+                  <View style={[styles.bar, { height: barHeight, backgroundColor: mode === 'garden' ? 'none' : barColor }]}>
+                    {mode === 'garden' && <Plant color={color} level={plantLevel} height={MAX_BAR_HEIGHT + 5} />}
+                  </View>
                 </View>
               )}
               <Text style={[styles.weekText, { color }]}>{`${d.getMonth() + 1}/${d.getDate()}`}</Text>
@@ -68,11 +75,12 @@ const styles = StyleSheet.create({
   count: {
     width: '100%',
     textAlign: 'center',
-    paddingBottom: 2,
+    paddingBottom: 4,
   },
   bar: {
     width: '100%',
     borderRadius: 3,
+    zIndex: 3,
   },
   gridLine: {
     position: 'absolute',

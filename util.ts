@@ -70,7 +70,7 @@ export function getWeeklyCheckIns(habit: Habit, numWeeks: number): number[] {
   const result: number[] = [];
   const today = new Date();
   let lastCount = 0;
-  for (let d = 0; d < today.getDay(); d += 1) {
+  for (let d = 0; d <= today.getDay(); d += 1) {
     const date = new Date(today);
     date.setDate(today.getDate() - d);
     const year = today.getFullYear();
@@ -78,8 +78,9 @@ export function getWeeklyCheckIns(habit: Habit, numWeeks: number): number[] {
     const mask = habit.checkInMasks[year];
     if (mask && mask[day - 1] === '1') lastCount++;
   }
-  today.setDate(today.getDate() - (today.getDay() % 7));
-  for (let w = numWeeks - 1; w >= 0; w--) {
+  result.push(lastCount);
+  today.setDate(today.getDate() - (today.getDay() % 7) - 1);
+  for (let w = 0; w < numWeeks; w++) {
     let count = 0;
     for (let d = 0; d < 7; d++) {
       const date = new Date(today);
@@ -91,7 +92,6 @@ export function getWeeklyCheckIns(habit: Habit, numWeeks: number): number[] {
     }
     result.push(count);
   }
-  result.push(lastCount);
   return result;
 }
 
